@@ -1,0 +1,12 @@
+.DS_Store
+/api/config.php
+/bot/.env
+*.sqlite
+*.log
+
+/api/config.php
+/bot/.env
+*.sqlite
+*.log
+.DS_Store
+__MACOSX/

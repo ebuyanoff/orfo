@@ -1,0 +1,518 @@
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8" />
+  <title>Тест на грамотность</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <style>
+    :root { --w: 620px; --blue:#1976d2; --gray:#b6b6b6; --red:#ef233c; --green:#09b73d; --violet:#860c8a; --focus:#fff316;}
+    html, body { margin: 0; background: #fff; color: #000; font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, "Liberation Mono", monospace; font-size: 20px;}
+
+    #testwrap {min-height:80svh; display: flex; justify-content: center; align-items: center;}
+    .card { width: var(--w); max-width: calc(100% - 30px); margin: 10svh 0; }
+    .meta {font-size: 16px; color: var(--gray);  margin-bottom: 40px; display: flex; justify-content: space-between;}
+    .sentence { font-size: 28px; line-height: 160%; user-select: none; }
+
+    .nowrap { white-space: nowrap; display: inline-flex; align-items: baseline; vertical-align: baseline; }
+    .sentence .gap { display: inline-flex; align-items: center; justify-content: center; box-sizing: border-box; min-width: 1.6ch; height: 1.1em; line-height: 1em; padding: 0 .25ch; margin: 0 .05ch; background:#f1f1f1;color: var(--gray); border-radius: 6px; vertical-align: middle; text-align: center; transition: border-color .15s, box-shadow .15s, transform .15s; }
+    .sentence .gap.active {color: black; transform: translateY(0); background:var(--focus);}
+    .sentence .gap.done { font-weight:bold; background:none; padding:0; margin:0; min-width: 0; cursor: help;}
+    .sentence .gap.done.correct {color: var(--green);}
+    .sentence .gap.done.wrong {color: var(--red); position: relative;}
+    .sentence .gap.done.wrong::after {color: var(--red); content:"×"; position: absolute; top:-10px; right:-5px; font-size: 16px; font-weight: bold;}
+    .sentence .gap.done.idontknow {color: var(--violet);}
+
+    .options { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 28px 14px; align-items: stretch; margin: 50px auto 0; user-select: none; }
+    .btn { position: relative; display: flex; align-items: center; justify-content: center; min-height: 48px; padding: 14px 16px; border: 2px solid #000; border-radius: 10px; background: #fff;  color:black; font: inherit; font-size: 28px; line-height: 1; text-align: center; cursor: pointer; transition: transform .08s ease, box-shadow .08s ease, border-color .08s ease, color .08s ease; }
+    .btn#mid { grid-column: 1 / -1; border: none; color:var(--gray); padding:5px; font-size:22px; font-weight:500;}
+    .btn#mid strong {border-bottom:2px dashed; }
+    .btn::after { position: absolute; top: 50%; margin-top:-18px; transform: translate(-50%, 6px); font-weight:bold; font-size: 24px; line-height: 1; color: var(--gray);   content: ""; }
+    .btn#left::after { content: "←"; left:20px;}
+    .btn#right::after { content: "→"; right:20px;}
+    .btn--wide { grid-column: 1 / -1; margin:0 0 76px;}
+    .btn:not(#mid):hover { box-shadow: 0 2px 0 #000;}
+    .btn:not(#mid).is-pressed, .btn:not(#mid):active  {transform: translateY(-1px); box-shadow: 0 2px 0 #000; outline:none;}
+    .btn:focus {outline:none;}
+
+    #resultstabel {padding:10px 0 40px;}
+    .topicresult {display: flex; justify-content: space-between; border-bottom: 2px dotted var(--gray); padding:18px 0 2px; cursor: pointer; transition: border-color .2s ease;}
+    .topicresult:hover {border-bottom: 2px dotted black; transition: border-color .2s ease; cursor: help;}
+    .topicresult span:nth-child(2) {padding-left:30px; font-weight: bold;}
+    .restartwrap {margin:20px 0 20px; text-align: center;}
+    #restart {font-size:20px; color:var(--gray); cursor: pointer;}
+    .telegramwrap {display: grid; margin:42px 0 0;}
+    .btmtg {background-color: #86ccef; grid-column: 1 / -1;  color:black; text-decoration: none; padding:4px 20px; line-height: 100%;}
+
+    .overlay { position: fixed; inset:0; background: rgba(0,0,0,.35); opacity:0; pointer-events:none; transition:opacity .2s ease-out; z-index: 900; }
+    .overlay.open { opacity:1; pointer-events:auto; }
+    .rulepanel { position: fixed; top:0; right:0; height:100vh; width:min(720px, 94vw); background:#fff; box-shadow:-8px 0 20px rgba(0,0,0,.05); transform: translateX(100%); transition: transform .2s ease-out; z-index: 1000; display:flex; flex-direction:column; }
+    .rulepanel.open { transform: translateX(0); }
+    .rulepanel__close { position:absolute; top:8px; right:10px; font-size:28px; line-height:1; background:transparent; border:none; cursor:pointer; }
+    .rulepanel__inner { padding:24px 8%; padding-top:56px; overflow:auto; }
+
+    #copyresultid{display: inline-block;position:relative;padding-right:28px;cursor:copy;border-bottom:1px dashed silver;}
+    #copyresultid:hover{border-bottom:1px dashed var(--blue); color:var(--blue);}
+    #copyresultid:focus-visible{outline:2px solid currentColor;outline-offset:2px}
+    #copyresultid::after,#copyresultid::before{content:"";position:absolute;right:4px;top:50%;width:14px;height:16px;border:1px solid currentColor;border-radius:2px;transform:translateY(-50%);opacity:.65;pointer-events:none}
+    #copyresultid::before{right:8px;top:calc(50% - 2px);opacity:.35}
+    #copyresultid .copy-bubble{position:absolute;left:50%;bottom:100%;transform:translate(-50%,-6px);background:rgba(17,17,17,.95);color:#fff;font:12px/1.2 system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;padding:6px 8px;border-radius:6px;white-space:nowrap;opacity:0;pointer-events:none;transition:opacity .15s ease,transform .15s ease;z-index:1000}
+    #copyresultid .copy-bubble.show{opacity:1;transform:translate(-50%,-10px)}
+
+
+    @media screen and (max-width: 800px) {
+    body {font-size: 18px;}		
+    #testwrap {min-height:50svh;}
+    .btn::after {display: none;}
+    .card {margin:4svh 0 0;}
+    .sentence { font-size: 24px;}
+    .btn { font-size: 21px;}
+    .options {position:fixed; bottom:0; left:15px; right:15px; gap: 8px 14px;}
+    .btn:not(#mid):hover { box-shadow: none;}
+    .btn#mid {padding:0; font-size:16px; height:48px;}
+    .btn--wide { margin:0 0 56px;}
+    .telegramwrap {margin:28px 0 0;}
+    }
+  </style>
+</head>
+<body>
+
+  <div id="testwrap">
+    <div class="card">
+      <div class="meta" id="meta"></div>
+
+      <div class="sentence" id="sentence"></div>
+
+      <div class="options" id="options" aria-label="Панель выбора">
+        <button class="btn" id="left"  type="button"></button>
+        <button class="btn" id="right" type="button"></button>
+        <button class="btn mid" id="mid" type="button"><strong>честно не знаю</strong></button>
+      </div>
+
+      <div id="results" >
+
+        <h2>Ваши результаты</h2>
+
+        <p>Ниже идут темы и процент правильных ответов. Нажмите на строку, чтобы посмотреть правила.</p>
+
+        <div id="resultstabel"><!--тут будет таблица--></div>
+
+        <p>Сохраните свой результат и получите <strong>.pdf с правилами</strong> по всем темам русского языка:</p>
+<!-- 
+       <ol>
+        <li> Скопируйте код результата: <span id="copyresultid">123456789</span>. </li>
+        <li> Отправьте код <a href="https://t.me/evgenybuyanoff" target="_blank">в телеграм</a> (не бот). </li>
+      </ol>
+
+
+        <div class="telegramwrap"><a class="btn btmtg" href="https://t.me/evgenybuyanoff" target="_blank">Получить в telegram</a></div> -->
+
+        <!-- <div class="restartwrap"><a id="restart">пройти заново</a></div> -->
+
+      </div>
+
+    </div>
+  </div>
+
+  <div id="overlay" class="overlay" aria-hidden="true"></div>
+  <aside id="rulepanel" class="rulepanel" aria-hidden="true">
+    <button class="rulepanel__close" id="ruleclose" aria-label="Закрыть">×</button>
+    <div class="rulepanel__inner" id="rulecontent"></div>
+  </aside>
+
+
+<script>
+(() => {
+  const $sentence = document.getElementById('sentence');
+  const $meta = document.getElementById('meta');
+  const $btnL = document.getElementById('left');
+  const $btnR = document.getElementById('right');
+  const $btnM = document.getElementById('mid');
+  const $results = document.getElementById('results');
+  const $resultstabel = document.getElementById('resultstabel');
+  const $opts = document.getElementById('options');
+
+  const $overlay = document.getElementById('overlay');
+  const $rulePanel = document.getElementById('rulepanel');
+  const $ruleClose = document.getElementById('ruleclose');
+  const $ruleContent = document.getElementById('rulecontent');
+
+  $results.style.display = 'none';
+
+  // Единый источник правок: заголовок и HTML для правила
+  const TOPICS = {
+    1: { title: 'Н и НН в суффиксах', ruleHtml: '' },
+    2: { title: 'Приставки ПРЕ и ПРИ', ruleHtml: '' },
+    3: { title: 'НЕ слитно и раздельно', ruleHtml: '' },
+  };
+
+  // Данные тестов
+const TEXTS = [
+  {
+    id: 't1',
+    parts: [
+      'На улице стояла ',
+      { id:'t1g1', topic:1, correct:'н', left:'н', right:'нн', btnLeft:'н', btnRight:'нн', pre:'ветре', post:'ая' },
+      ' погода, мы ',
+      { id:'t1g2', topic:2, correct:'и', left:'и', right:'е', btnLeft:'и', btnRight:'е', pre:'пр', post:'плыли' },
+      ' на корабле на ',
+      { id:'t1g3', topic:3, correct:'←', left:'←', right:'_', btnLeft:'слитно', btnRight:'раздельно', pre:'не', post:'обитаемый' },
+      ' остров.'
+    ]
+  },
+  {
+    id: 't2',
+    parts: [
+      'В музее я увидел искусно ',
+      { id:'t2g1', topic:1, correct:'нн', left:'н', right:'нн', btnLeft:'н', btnRight:'нн', pre:'выреза', post:'ую' },
+      ' из дерева фигурку, которая стояла на ',
+      { id:'t2g2', topic:2, correct:'е', left:'и', right:'е', btnLeft:'и', btnRight:'е', pre:'пр', post:'высоком' },
+      ' постаменте, скрытом в ',
+      { id:'t2g3', topic:3, correct:'←', left:'←', right:'_', btnLeft:'слитно', btnRight:'раздельно', pre:'не', post:'освещённом' },
+      ' углу.'
+    ]
+  },
+  {
+    id: 't3',
+    parts: [
+      'На поляне мы нашли ',
+      { id:'t3g1', topic:1, correct:'нн', left:'н', right:'нн', btnLeft:'н', btnRight:'нн', pre:'заброше', post:'ый' },
+      ' домик, к которому вела ',
+      { id:'t3g2', topic:2, correct:'е', left:'и', right:'е', btnLeft:'и', btnRight:'е', pre:'пр', post:'длинная' },
+      ' тропинка, затерявшаяся в ',
+      { id:'t3g3', topic:3, correct:'←', left:'←', right:'_', btnLeft:'слитно', btnRight:'раздельно', pre:'не', post:'кошеной' },
+      ' траве.'
+    ]
+  },
+  {
+    id: 't4',
+    parts: [
+      'Художник писал ',
+      { id:'t4g1', topic:1, correct:'нн', left:'н', right:'нн', btnLeft:'н', btnRight:'нн', pre:'вдохнове', post:'ые' },
+      ' картины, передававшие ',
+      { id:'t4g2', topic:2, correct:'е', left:'и', right:'е', btnLeft:'и', btnRight:'е', pre:'пр', post:'восходную' },
+      ' красоту гор, утопающих в ',
+      { id:'t4g3', topic:3, correct:'←', left:'←', right:'_', btnLeft:'слитно', btnRight:'раздельно', pre:'не', post:'проходимых' },
+      ' лесах.'
+    ]
+  },
+  {
+    id: 't5',
+    parts: [
+      'Экспедиция наткнулась на ',
+      { id:'t5g1', topic:1, correct:'нн', left:'н', right:'нн', btnLeft:'н', btnRight:'нн', pre:'полуразруше', post:'ую' },
+      ' крепость, спрятавшуюся за ',
+      { id:'t5g2', topic:2, correct:'е', left:'и', right:'е', btnLeft:'и', btnRight:'е', pre:'пр', post:'высокими' },
+      ' скалами, в ',
+      { id:'t5g3', topic:3, correct:'←', left:'←', right:'_', btnLeft:'слитно', btnRight:'раздельно', pre:'не', post:'доступном' },
+      ' ущелье.'
+    ]
+  }
+];
+
+  // Плоский список гэпов
+  const gaps = [];
+  TEXTS.forEach((t, ti) => {
+    t.parts.forEach((p, pi) => {
+      if (typeof p === 'object') {
+        gaps.push({ textIndex: ti, partIndex: pi, ...p, user: null, ok: null, idk:false });
+      }
+    });
+  });
+
+  // Статистика по темам
+  const stats = { 1:{ok:0,total:0}, 2:{ok:0,total:0}, 3:{ok:0,total:0} };
+
+  // Текущий активный гэп
+  let gapCursor = 0;
+
+  // «последний ответ в тексте» — ждём ручного Next
+  let waitingNext = false;
+  let waitingTextIndex = null;
+  let queuedGapCursor = null;
+
+  function findGapIndexByIds(textId, gapId) {
+    return gaps.findIndex(g => TEXTS[g.textIndex].id === textId && g.id === gapId);
+  }
+
+  function activeTextIndex() {
+    return waitingNext ? waitingTextIndex : (gaps[gapCursor]?.textIndex ?? TEXTS.length - 1);
+  }
+
+  function renderText() {
+    const ti = activeTextIndex();
+    const text = TEXTS[ti];
+
+    $meta.style.display = 'flex';
+    $meta.innerHTML = `<strong>${ti + 1}/${TEXTS.length}</strong>`;
+
+    let html = '';
+    text.parts.forEach((p) => {
+      if (typeof p === 'string') {
+        html += p;
+      } else {
+        const gIdx = findGapIndexByIds(text.id, p.id);
+        const isActive = !waitingNext && gIdx === gapCursor;
+        const answered = gaps[gIdx].user !== null;
+
+        const cls = ['gap'];
+        if (isActive) cls.push('active');
+        if (answered) {
+          cls.push('done');
+          if (gaps[gIdx].idk) cls.push('idontknow');
+          else cls.push(gaps[gIdx].ok ? 'correct' : 'wrong');
+        }
+
+        let shown = '?';
+        if (answered) {
+          shown = gaps[gIdx].user;
+        }
+
+        html += `<span class="nowrap">${p.pre}<span class="${cls.join(' ')}" data-topic="${p.topic}" data-text-id="${text.id}" data-gap-id="${p.id}">${shown}</span>${p.post}</span>`;
+      }
+    });
+
+    $sentence.innerHTML = html;
+    updateButtonsForActiveState();
+  }
+
+function updateButtonsForActiveState() {
+  if (waitingNext) {
+    $btnR.textContent = 'Дальше';
+    $btnR.classList.add('btn--wide');
+    $btnR.style.display = '';
+    $btnL.style.display = 'none';
+    $btnM.style.display = 'none';
+    return;
+  }
+  $btnR.classList.remove('btn--wide');
+  $btnL.style.display = '';
+  $btnR.style.display = '';
+  $btnM.style.display = '';
+
+  const g = gaps[gapCursor];
+  if (!g) return;
+  $btnL.textContent = g.btnLeft;
+  $btnR.textContent = g.btnRight;
+}
+
+  function sendMetricPayload(g, choice, ok) {
+    const payload = {
+      textId: TEXTS[g.textIndex].id,
+      gapId: g.id,
+      topic: g.topic,
+      topicTitle: TOPICS[g.topic]?.title || '',
+      choice: choice,
+      correct: g.correct,
+      isCorrect: ok,
+      textIndex: g.textIndex,
+      gapIndexGlobal: gapCursor,
+      timestamp: Date.now()
+    };
+    document.dispatchEvent(new CustomEvent('gapAnswer', { detail: payload }));
+    if (typeof window.onGapAnswer === 'function') window.onGapAnswer(payload);
+  }
+
+  function answer(choice) {
+    if (waitingNext) return;
+
+    const g = gaps[gapCursor];
+    if (!g) return;
+
+    let actual = choice;
+    if (choice === g.btnLeft) {
+      actual = g.left;
+    } else if (choice === g.btnRight) {
+      actual = g.right;
+    }
+
+    const isIdk = choice === 'честно не знаю';
+    if (isIdk) { g.idk = true; actual = g.correct; g.ok = null; }
+    else { g.idk = false; g.ok = actual === g.correct; }
+    g.user = actual;
+
+    if (!isIdk) {
+      stats[g.topic].total += 1;
+      if (g.ok) stats[g.topic].ok += 1;
+    }
+
+    sendMetricPayload(g, choice, g.ok === true);
+
+    const currentTextIndex = g.textIndex;
+
+    const allInTextAnswered = gaps
+      .filter(x => x.textIndex === currentTextIndex)
+      .every(x => x.user !== null);
+
+    if (allInTextAnswered) {
+      waitingNext = true;
+      waitingTextIndex = currentTextIndex;
+
+      let nextIdx = gapCursor + 1;
+      while (nextIdx < gaps.length && gaps[nextIdx].user !== null) nextIdx++;
+      queuedGapCursor = nextIdx >= gaps.length ? gaps.length : nextIdx;
+
+      renderText();
+      return;
+    }
+
+    let nextIdx = gapCursor + 1;
+    while (nextIdx < gaps.length && gaps[nextIdx].user !== null) nextIdx++;
+    gapCursor = nextIdx;
+
+    if (gapCursor >= gaps.length) {
+      showResults();
+    } else {
+      renderText();
+    }
+  }
+
+  function goNext() {
+    if (!waitingNext) return;
+
+    if (queuedGapCursor >= gaps.length) {
+      showResults();
+      return;
+    }
+    gapCursor = queuedGapCursor;
+    waitingNext = false;
+    waitingTextIndex = null;
+    queuedGapCursor = null;
+
+    renderText();
+  }
+
+  function showResults() {
+    $sentence.innerHTML = '';
+    $opts.style.display = 'none';
+    $meta.style.display = 'none';
+
+    const rows = Object.keys(stats).map(k => {
+      const s = stats[k];
+      const pct = s.total ? Math.round((s.ok / s.total) * 100) : 0;
+      return { topic:+k, title: TOPICS[k].title, pct };
+    }).sort((a,b) => a.pct - b.pct);
+
+    const inner = rows.map(r => (
+      `<div class="topicresult" data-topic="${r.topic}"><span>${r.title}</span> <span>${r.pct}%</span></div>`
+    )).join('');
+
+    $resultstabel.innerHTML = `
+        ${inner}
+    `;
+
+    $results.style.display = 'block';
+
+    document.getElementById('restart').addEventListener('click', resetAll);
+  }
+
+  function resetAll() {
+    for (const k in stats) { stats[k].ok = 0; stats[k].total = 0; }
+    gaps.forEach(g => { g.user = null; g.ok = null; g.idk = false; });
+    gapCursor = 0;
+    waitingNext = false;
+    waitingTextIndex = null;
+    queuedGapCursor = null;
+
+    $opts.style.display = 'grid';
+    $results.style.display = 'none';
+    renderText();
+  }
+
+  // Правила: открытие/закрытие
+  function openRule(topic) {
+    const rule = TOPICS[topic];
+    if (!rule) return;
+    const inner = rule.ruleHtml && rule.ruleHtml.trim()
+      ? rule.ruleHtml
+      : `<h2>${rule.title}</h2>`;
+    $ruleContent.innerHTML = inner;
+    $overlay.classList.add('open');
+    $overlay.setAttribute('aria-hidden','false');
+    $rulePanel.classList.add('open');
+    $rulePanel.setAttribute('aria-hidden','false');
+  }
+
+  function closeRule() {
+    $rulePanel.classList.remove('open');
+    $rulePanel.setAttribute('aria-hidden','true');
+    $overlay.classList.remove('open');
+    $overlay.setAttribute('aria-hidden','true');
+  }
+
+  $ruleClose.addEventListener('click', closeRule);
+  $overlay.addEventListener('click', closeRule);
+  window.addEventListener('keydown', (e) => { if (e.key === 'Escape') closeRule(); });
+
+  // Клик по гэпу — показываем правило
+  $sentence.addEventListener('click', (e) => {
+    const el = e.target.closest('.gap.done');
+    if (!el) return;
+    const topic = +el.dataset.topic;
+    openRule(topic);
+  });
+
+  // Клик по теме в результатах — тоже правило
+  $results.addEventListener('click', (e) => {
+    const row = e.target.closest('.topicresult');
+    if (!row) return;
+    const topic = +row.dataset.topic;
+    openRule(topic);
+  });
+
+  // Кнопки 
+  $btnL.addEventListener('click', () => { if (!waitingNext) answer($btnL.textContent); });
+  $btnR.addEventListener('click', () => { if (waitingNext) goNext(); else answer($btnR.textContent); });
+  $btnM.addEventListener('click', () => { if (!waitingNext) answer('честно не знаю'); });
+
+  // Клавиатура
+  window.addEventListener('keydown', (e) => {
+    if (e.key === 'ArrowLeft') {
+      if (!waitingNext) { pulse($btnL); answer($btnL.textContent); }
+    } else if (e.key === 'ArrowRight') {
+      pulse($btnR);
+      if (waitingNext) goNext();
+      else answer($btnR.textContent);
+    } else if (e.key === 'ArrowDown') {
+      if (!waitingNext) { pulse($btnM); answer('честно не знаю'); }
+    }
+  });
+
+  function pulse(btn) {
+    btn.classList.add('is-pressed');
+    setTimeout(() => btn.classList.remove('is-pressed'), 120);
+  }
+
+  // Скопировать результат
+  (() => {
+    const el = document.getElementById('copyresultid');
+    if (!el) return;
+
+    const tip = document.createElement('span');
+    tip.className = 'copy-bubble';
+    tip.textContent = 'Скопировано';
+    el.appendChild(tip);
+
+    let timer;
+    function showTip() {
+      tip.classList.add('show');
+      clearTimeout(timer);
+      timer = setTimeout(() => tip.classList.remove('show'), 1600);
+    }
+
+    function copy() {
+      const text = el.firstChild.nodeValue.trim();
+      navigator.clipboard.writeText(text).then(showTip);
+    }
+
+    el.addEventListener('click', copy);
+  })();
+
+  // Старт
+  renderText();
+})();
+
+</script>
+
+  <script src="js/test.js"></script>
+</body>
+</html>

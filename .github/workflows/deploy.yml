@@ -1,0 +1,40 @@
+name: Deploy to REG.RU
+
+on:
+  push:
+    branches: [ "main" ]
+  workflow_dispatch: {}
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Write version.json
+        run: |
+          echo "{\"commit\":\"${GITHUB_SHA}\",\"date\":\"$(date -u +%FT%TZ)\"}" > version.json
+
+      - name: Prepare exclude list
+        run: |
+          cat > deploy-exclude.txt <<'EOF'
+          .git*
+          .github/
+          api/config.php
+          bot/.env
+          *.sqlite
+          *.log
+          README*.md
+          EOF
+
+      - name: Start SSH agent
+        uses: webfactory/ssh-agent@v0.9.0
+        with:
+          ssh-private-key: ${{ secrets.SSH_KEY }}
+
+      - name: Add host to known_hosts
+        run: ssh-keyscan -H "${{ secrets.SSH_HOST }}" >> ~/.ssh/known_hosts
+
+      - name: Rsync deploy
+        run: |
+          rsync -az --delete             --exclude-from=deploy-exclude.txt             ./ ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }}:${{ secrets.DEPLOY_PATH }}/
