@@ -4,7 +4,12 @@
   <meta charset="utf-8" />
   <title>Тест на грамотность</title>
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <link rel="stylesheet" href="/css/test.css">
+  <link rel="stylesheet" href="css/test.css">
+
+  <!-- стиль для iframe с правилами -->
+  <style>
+    .rule-frame{width:100%;min-height:360px;border:0;border-radius:6px;background:#fff}
+  </style>
 </head>
 <body>
 
@@ -30,14 +35,12 @@
 
         <p>Сохраните свой результат и получите <strong>.pdf с правилами</strong> по всем темам русского языка:</p>
 
-       <ol>
-        <li> Скопируйте код результата: <span id="copyresultid"></span>. </li>
-        <li> Отправьте код <a href="https://t.me/evgenybuyanoff" target="_blank">в телеграм</a> (не бот). </li>
-      </ol>
+        <ol>
+          <li> Скопируйте код результата: <span id="copyresultid"></span>. </li>
+          <li> Отправьте код <a href="https://t.me/evgenybuyanoff" target="_blank">в телеграм</a> (не бот). </li>
+        </ol>
 
-
-        <div class="telegramwrap"><a class="btn btmtg" href="https://t.me/evgenybuyanoff" target="_blank">Получить в telegram</a></div> 
-
+        <div class="telegramwrap"><a class="btn btmtg" href="https://t.me/evgenybuyanoff" target="_blank">Получить в telegram</a></div>
         <!-- <div class="restartwrap"><a id="restart">пройти заново</a></div> -->
 
       </div>
@@ -51,6 +54,8 @@
     <div class="rulepanel__inner" id="rulecontent"></div>
   </aside>
 
+  <script src="js/topics.js?v=1"></script>
+  <script src="js/texts.js?v=1"></script>
 
 <script>
 (() => {
@@ -70,80 +75,9 @@
 
   $results.style.display = 'none';
 
-  // Единый источник правок: заголовок и HTML для правила
-  const TOPICS = {
-    1: { title: 'Н и НН в суффиксах', ruleHtml: '' },
-    2: { title: 'Приставки ПРЕ и ПРИ', ruleHtml: '' },
-    3: { title: 'НЕ слитно и раздельно', ruleHtml: '' },
-  };
-
-  // Данные тестов
-const TEXTS = [
-  {
-    id: 't1',
-    parts: [
-      'На улице стояла ',
-      { id:'t1g1', topic:1, correct:'н', left:'н', right:'нн', btnLeft:'н', btnRight:'нн', pre:'ветре', post:'ая' },
-      ' погода, мы ',
-      { id:'t1g2', topic:2, correct:'и', left:'и', right:'е', btnLeft:'и', btnRight:'е', pre:'пр', post:'плыли' },
-      ' на корабле на ',
-      { id:'t1g3', topic:3, correct:'←', left:'←', right:'_', btnLeft:'слитно', btnRight:'раздельно', pre:'не', post:'обитаемый' },
-      ' остров.'
-    ]
-  },
-  {
-    id: 't2',
-    parts: [
-      'В музее я увидел искусно ',
-      { id:'t2g1', topic:1, correct:'нн', left:'н', right:'нн', btnLeft:'н', btnRight:'нн', pre:'выреза', post:'ую' },
-      ' из дерева фигурку, которая стояла на ',
-      { id:'t2g2', topic:2, correct:'е', left:'и', right:'е', btnLeft:'и', btnRight:'е', pre:'пр', post:'высоком' },
-      ' постаменте, скрытом в ',
-      { id:'t2g3', topic:3, correct:'←', left:'←', right:'_', btnLeft:'слитно', btnRight:'раздельно', pre:'не', post:'освещённом' },
-      ' углу.'
-    ]
-  },
-  {
-    id: 't3',
-    parts: [
-      'На поляне мы нашли ',
-      { id:'t3g1', topic:1, correct:'нн', left:'н', right:'нн', btnLeft:'н', btnRight:'нн', pre:'заброше', post:'ый' },
-      ' домик, к которому вела ',
-      { id:'t3g2', topic:2, correct:'е', left:'и', right:'е', btnLeft:'и', btnRight:'е', pre:'пр', post:'длинная' },
-      ' тропинка, затерявшаяся в ',
-      { id:'t3g3', topic:3, correct:'←', left:'←', right:'_', btnLeft:'слитно', btnRight:'раздельно', pre:'не', post:'кошеной' },
-      ' траве.'
-    ]
-  },
-  {
-    id: 't4',
-    parts: [
-      'Художник писал ',
-      { id:'t4g1', topic:1, correct:'нн', left:'н', right:'нн', btnLeft:'н', btnRight:'нн', pre:'вдохнове', post:'ые' },
-      ' картины, передававшие ',
-      { id:'t4g2', topic:2, correct:'е', left:'и', right:'е', btnLeft:'и', btnRight:'е', pre:'пр', post:'восходную' },
-      ' красоту гор, утопающих в ',
-      { id:'t4g3', topic:3, correct:'←', left:'←', right:'_', btnLeft:'слитно', btnRight:'раздельно', pre:'не', post:'проходимых' },
-      ' лесах.'
-    ]
-  },
-  {
-    id: 't5',
-    parts: [
-      'Экспедиция наткнулась на ',
-      { id:'t5g1', topic:1, correct:'нн', left:'н', right:'нн', btnLeft:'н', btnRight:'нн', pre:'полуразруше', post:'ую' },
-      ' крепость, спрятавшуюся за ',
-      { id:'t5g2', topic:2, correct:'е', left:'и', right:'е', btnLeft:'и', btnRight:'е', pre:'пр', post:'высокими' },
-      ' скалами, в ',
-      { id:'t5g3', topic:3, correct:'←', left:'←', right:'_', btnLeft:'слитно', btnRight:'раздельно', pre:'не', post:'доступном' },
-      ' ущелье.'
-    ]
-  }
-];
-
-  // Плоский список гэпов
+  // --- Плоский список гэпов на основе TEXTS (из внешнего файла) ---
   const gaps = [];
-  TEXTS.forEach((t, ti) => {
+  window.TEXTS.forEach((t, ti) => {
     t.parts.forEach((p, pi) => {
       if (typeof p === 'object') {
         gaps.push({ textIndex: ti, partIndex: pi, ...p, user: null, ok: null, idk:false });
@@ -163,19 +97,19 @@ const TEXTS = [
   let queuedGapCursor = null;
 
   function findGapIndexByIds(textId, gapId) {
-    return gaps.findIndex(g => TEXTS[g.textIndex].id === textId && g.id === gapId);
+    return gaps.findIndex(g => window.TEXTS[g.textIndex].id === textId && g.id === gapId);
   }
 
   function activeTextIndex() {
-    return waitingNext ? waitingTextIndex : (gaps[gapCursor]?.textIndex ?? TEXTS.length - 1);
+    return waitingNext ? waitingTextIndex : (gaps[gapCursor]?.textIndex ?? window.TEXTS.length - 1);
   }
 
   function renderText() {
     const ti = activeTextIndex();
-    const text = TEXTS[ti];
+    const text = window.TEXTS[ti];
 
     $meta.style.display = 'flex';
-    $meta.innerHTML = `<strong>${ti + 1}/${TEXTS.length}</strong>`;
+    $meta.innerHTML = `<strong>${ti + 1}/${window.TEXTS.length}</strong>`;
 
     let html = '';
     text.parts.forEach((p) => {
@@ -207,32 +141,32 @@ const TEXTS = [
     updateButtonsForActiveState();
   }
 
-function updateButtonsForActiveState() {
-  if (waitingNext) {
-    $btnR.textContent = 'Дальше';
-    $btnR.classList.add('btn--wide');
+  function updateButtonsForActiveState() {
+    if (waitingNext) {
+      $btnR.textContent = 'Дальше';
+      $btnR.classList.add('btn--wide');
+      $btnR.style.display = '';
+      $btnL.style.display = 'none';
+      $btnM.style.display = 'none';
+      return;
+    }
+    $btnR.classList.remove('btn--wide');
+    $btnL.style.display = '';
     $btnR.style.display = '';
-    $btnL.style.display = 'none';
-    $btnM.style.display = 'none';
-    return;
-  }
-  $btnR.classList.remove('btn--wide');
-  $btnL.style.display = '';
-  $btnR.style.display = '';
-  $btnM.style.display = '';
+    $btnM.style.display = '';
 
-  const g = gaps[gapCursor];
-  if (!g) return;
-  $btnL.textContent = g.btnLeft;
-  $btnR.textContent = g.btnRight;
-}
+    const g = gaps[gapCursor];
+    if (!g) return;
+    $btnL.textContent = g.btnLeft;
+    $btnR.textContent = g.btnRight;
+  }
 
   function sendMetricPayload(g, choice, ok) {
     const payload = {
-      textId: TEXTS[g.textIndex].id,
+      textId: window.TEXTS[g.textIndex].id,
       gapId: g.id,
       topic: g.topic,
-      topicTitle: TOPICS[g.topic]?.title || '',
+      topicTitle: window.TOPICS[g.topic]?.title || '',
       choice: choice,
       correct: g.correct,
       isCorrect: ok,
@@ -321,20 +255,19 @@ function updateButtonsForActiveState() {
     const rows = Object.keys(stats).map(k => {
       const s = stats[k];
       const pct = s.total ? Math.round((s.ok / s.total) * 100) : 0;
-      return { topic:+k, title: TOPICS[k].title, pct };
+      return { topic:+k, title: window.TOPICS[k].title, pct };
     }).sort((a,b) => a.pct - b.pct);
 
     const inner = rows.map(r => (
       `<div class="topicresult" data-topic="${r.topic}"><span>${r.title}</span> <span>${r.pct}%</span></div>`
     )).join('');
 
-    $resultstabel.innerHTML = `
-        ${inner}
-    `;
-
+    $resultstabel.innerHTML = `${inner}`;
     $results.style.display = 'block';
 
-    document.getElementById('restart').addEventListener('click', resetAll);
+    // Защита, если кнопки "пройти заново" нет в верстке
+    const restart = document.getElementById('restart');
+    if (restart) restart.addEventListener('click', resetAll);
   }
 
   function resetAll() {
@@ -352,7 +285,7 @@ function updateButtonsForActiveState() {
 
   // Правила: открытие/закрытие
   function openRule(topic) {
-    const rule = TOPICS[topic];
+    const rule = window.TOPICS[topic];
     if (!rule) return;
     const inner = rule.ruleHtml && rule.ruleHtml.trim()
       ? rule.ruleHtml
@@ -442,7 +375,6 @@ function updateButtonsForActiveState() {
   // Старт
   renderText();
 })();
-
 </script>
 
   <script src="js/test.js"></script>
