@@ -3,38 +3,71 @@ name: Deploy to REG.RU
 on:
   push:
     branches: [ "main" ]
-  workflow_dispatch: {}
 
 jobs:
   deploy:
     runs-on: ubuntu-latest
+    timeout-minutes: 10
+
     steps:
-      - uses: actions/checkout@v4
+      - name: Checkout
+        uses: actions/checkout@v4
 
       - name: Write version.json
         run: |
-          echo "{\"commit\":\"${GITHUB_SHA}\",\"date\":\"$(date -u +%FT%TZ)\"}" > version.json
+          echo "{\"commit\":\"${GITHUB_SHA}\",\"time\":\"$(date -u +%FT%TZ)\"}" > version.json
 
-      - name: Prepare exclude list
+      - name: Put SSH key and known_hosts
+        env:
+          SSH_HOST: ${{ secrets.SSH_HOST }}
+          SSH_KEY:  ${{ secrets.SSH_KEY }}
         run: |
-          cat > deploy-exclude.txt <<'EOF'
-          .git*
-          .github/
-          api/config.php
-          bot/.env
-          *.sqlite
-          *.log
-          README*.md
-          EOF
+          set -e
+          mkdir -p ~/.ssh
+          echo "$SSH_KEY" > ~/.ssh/id_deploy
+          chmod 600 ~/.ssh/id_deploy
+          ssh-keyscan -p 22 "$SSH_HOST" >> ~/.ssh/known_hosts
+          chmod 644 ~/.ssh/known_hosts
 
-      - name: Start SSH agent
-        uses: webfactory/ssh-agent@v0.9.0
-        with:
-          ssh-private-key: ${{ secrets.SSH_KEY }}
-
-      - name: Add host to known_hosts
-        run: ssh-keyscan -H "${{ secrets.SSH_HOST }}" >> ~/.ssh/known_hosts
-
-      - name: Rsync deploy
+      - name: Sanity check: TCP 22 open?
+        env:
+          SSH_HOST: ${{ secrets.SSH_HOST }}
         run: |
-          rsync -az --delete             --exclude-from=deploy-exclude.txt             ./ ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }}:${{ secrets.DEPLOY_PATH }}/
+          set -e
+          echo "Testing TCP/22 on $SSH_HOST ..."
+          nc -zv "$SSH_HOST" 22
+
+      - name: Test SSH login (verbose) and prepare path
+        env:
+          SSH_HOST:    ${{ secrets.SSH_HOST }}
+          SSH_USER:    ${{ secrets.SSH_USER }}
+          DEPLOY_PATH: ${{ secrets.DEPLOY_PATH }}
+        run: |
+          set -e
+          echo "Trying SSH to $SSH_USER@$SSH_HOST ..."
+          ssh -vvv -i ~/.ssh/id_deploy -o IdentitiesOnly=yes -o StrictHostKeyChecking=yes \
+              "$SSH_USER@$SSH_HOST" "set -e; echo 'connected'; whoami; uname -a; mkdir -p '$DEPLOY_PATH'; ls -ld '$DEPLOY_PATH'"
+
+      - name: Rsync deploy (verbose)
+        env:
+          SSH_HOST:    ${{ secrets.SSH_HOST }}
+          SSH_USER:    ${{ secrets.SSH_USER }}
+          DEPLOY_PATH: ${{ secrets.DEPLOY_PATH }}
+        run: |
+          set -e
+          rsync -avz --delete \
+            --exclude 'api/config.php' \
+            --exclude '.git*' \
+            --exclude '.github/' \
+            --exclude 'README*' \
+            -e "ssh -i ~/.ssh/id_deploy -o IdentitiesOnly=yes -o StrictHostKeyChecking=yes" \
+            ./ "$SSH_USER@$SSH_HOST:$DEPLOY_PATH"
+
+      - name: Verify version.json on server
+        env:
+          SSH_HOST:    ${{ secrets.SSH_HOST }}
+          SSH_USER:    ${{ secrets.SSH_USER }}
+          DEPLOY_PATH: ${{ secrets.DEPLOY_PATH }}
+        run: |
+          ssh -i ~/.ssh/id_deploy -o IdentitiesOnly=yes -o StrictHostKeyChecking=yes \
+              "$SSH_USER@$SSH_HOST" "sed -n '1p' '$DEPLOY_PATH/version.json' || true"
