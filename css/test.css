@@ -43,9 +43,9 @@ html, body { margin: 0; background: #fff; color: #000; font-family: ui-monospace
 .overlay.open { opacity:1; pointer-events:auto; }
 .rulepanel { position: fixed; top:0; right:0; height:100vh; width:min(720px, 94vw); background:#fff; box-shadow:-8px 0 20px rgba(0,0,0,.05); transform: translateX(100%); transition: transform .2s ease-out; z-index: 1000; display:flex; flex-direction:column; }
 .rulepanel.open { transform: translateX(0); }
-.rulepanel__close { position:absolute; top:8px; right:10px; font-size:28px; line-height:1; border:none; cursor:pointer; background: transparent;}
+.rulepanel__close { position:absolute; top:8px; right:10px; font-size:28px; line-height:1; z-index:10; border:none; cursor:pointer; background: transparent;}
 .rulepanel__inner {overflow:auto; }
-.rule-frame {position:absolute; width:100%; top:56px; bottom:0; height:calc(100% - 56px); box-sizing: border-box; padding:0; border:0;}
+.rule-frame {position:absolute; width:100%; top:0; bottom:0; height:100%; box-sizing: border-box; padding:0; border:0;}
 
 #copyresultid{display: inline-block;position:relative;padding-right:28px;cursor:copy;border-bottom:1px dashed silver;}
 #copyresultid:hover{border-bottom:1px dashed var(--blue); color:var(--blue);}
