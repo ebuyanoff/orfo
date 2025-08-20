@@ -64,7 +64,7 @@ function normalize_host_path($url, $topic){
   return $fallback;
 }
 
-// Рендер тем в таблице: параграфы "Название: 80%."
+// Рендер тем в таблице: «<a>Название</a>: 80%.»
 function render_topics_html($json){
   if (!$json) return '';
   $arr = json_decode($json, true);
@@ -76,7 +76,8 @@ function render_topics_html($json){
     $topic = intval($t['topic'] ?? 0);
     $pct   = intval($t['pct'] ?? 0);
     $title = htmlspecialchars($t['title'] ?? ('Тема '.$topic));
-    $out[] = "<p><a href={$rule_url}>{$title}</a>: <b>{$pct}%</b>.</p>";
+    $url   = htmlspecialchars($t['rule_url'] ?? ("https://orfo.club/rules/topic-".$topic.".html"));
+    $out[] = "<p><a href='{$url}' target='_blank' rel='noopener'>{$title}</a>: <b>{$pct}%</b>.</p>";
   }
   return implode('', $out);
 }
@@ -95,7 +96,7 @@ function build_markdown($row){
     $title = $t['title'] ?? ('Тема '.$topic);
     $pct   = intval($t['pct'] ?? 0);
     $plain = normalize_host_path($t['rule_url'] ?? '', $topic);
-    $lines[] = "**{$title}:** {$pct}% {$plain}";
+    $lines[] = "**{$title}:** {$pct}% — {$plain}";
   }
   $acc = ($row['answer_cnt'] ?? 0) ? round(($row['correct_cnt']/$row['answer_cnt'])*100) : 0;
   $lines[] = "";
