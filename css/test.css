@@ -36,8 +36,8 @@ html, body { margin: 0; background: #fff; color: #000; font-family: ui-monospace
 .telegramwrap {display: grid; margin:42px 0 0;}
 .btmtg {background-color: #86ccef; grid-column: 1 / -1;  color:black; text-decoration: none; padding:4px 20px; line-height: 100%;}
 
-/* IMPORTANT: don't swallow clicks; alerts need them */
-.disabled { /* pointer-events: none; <-- убрано, чтобы ловить клики в JS */ opacity: 0.5; cursor: not-allowed; }
+.disabled {opacity: 0.5; cursor: not-allowed; }
+.disabled.btmtg {display:none;}
 
 .overlay { position: fixed; inset:0; background: rgba(0,0,0,.35); opacity:0; pointer-events:none; transition:opacity .2s ease-out; z-index: 900; }
 .overlay.open { opacity:1; pointer-events:auto; }
