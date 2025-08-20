@@ -46,40 +46,56 @@ $stmt->bindValue(':offset', $offset, PDO::PARAM_INT);
 $stmt->execute();
 $rows = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
-// Рендер тем (в админке)
-function render_topics($json){
+/** ===== helpers ===== */
+
+function normalize_host_path($url, $topic){
+  $fallback = "orfo.club/rules/topic-{$topic}.html";
+  if (!$url) return $fallback;
+  if (strpos($url, 'http://')===0 || strpos($url, 'https://')===0) {
+    $u = parse_url($url);
+    if (!$u) return $fallback;
+    $host = $u['host'] ?? '';
+    $path = $u['path'] ?? '';
+    if (!$host || !$path) return $fallback;
+    return $host . $path;
+  }
+  // относительный путь
+  if ($url[0] === '/') return 'orfo.club' . $url;
+  return $fallback;
+}
+
+// Рендер тем в таблице: параграфы "Название: 80%."
+function render_topics_html($json){
   if (!$json) return '';
   $arr = json_decode($json, true);
   if (!is_array($arr) || empty($arr)) return '';
-  // сортируем по возрастанию процента для наглядности
+  // сортируем по возрастанию процента
   usort($arr, fn($a,$b)=>($a['pct']??0)<=>($b['pct']??0));
   $out = [];
   foreach ($arr as $t) {
     $topic = intval($t['topic'] ?? 0);
     $pct   = intval($t['pct'] ?? 0);
     $title = htmlspecialchars($t['title'] ?? ('Тема '.$topic));
-    $url   = htmlspecialchars($t['rule_url'] ?? ("https://orfo.club/rules/topic-".$topic.".html"));
-    $out[] = "<div><b>{$title}</b> — <a href='{$url}' target='_blank' rel='noopener'>правило</a> — <b>{$pct}%</b></div>";
+    $out[] = "<p>{$title}: <b>{$pct}%</b>.</p>";
   }
   return implode('', $out);
 }
 
-// Готовим markdown для копирования
+// Markdown для копирования в ЛС: только **жирный** и простой URL без протокола
 function build_markdown($row){
   $arr = json_decode($row['topic_results_json'] ?? '[]', true) ?: [];
   usort($arr, fn($a,$b)=>($a['pct']??0)<=>($b['pct']??0));
   $lines = [];
-  $lines[] = "### Результаты теста по русскому языку";
-  $lines[] = "Код: **".$row['result_code']."**";
-  $lines[] = "Дата: ".$row['created_at'];
+  $lines[] = "Здравствуйте!";
   $lines[] = "";
-  $lines[] = "**Итоги по темам:**";
+  $lines[] = "Вот ваши результаты теста по русскому языку (код ".$row['result_code']."):";
+  $lines[] = "";
   foreach ($arr as $t) {
     $topic = intval($t['topic'] ?? 0);
     $title = $t['title'] ?? ('Тема '.$topic);
-    $url   = $t['rule_url'] ?? ("https://orfo.club/rules/topic-".$topic.".html");
     $pct   = intval($t['pct'] ?? 0);
-    $lines[] = "- {$title} — **{$pct}%** — [правило]({$url})";
+    $plain = normalize_host_path($t['rule_url'] ?? '', $topic);
+    $lines[] = "**{$title}:** {$pct}% — {$plain}";
   }
   $acc = ($row['answer_cnt'] ?? 0) ? round(($row['correct_cnt']/$row['answer_cnt'])*100) : 0;
   $lines[] = "";
@@ -98,13 +114,13 @@ function build_markdown($row){
   .controls{margin:10px 0;display:flex;gap:8px;align-items:center;flex-wrap:wrap}
   .badge{display:inline-block;background:#eef;border:1px solid #99f;padding:2px 6px;border-radius:4px}
   .pagination a, .pagination b{margin-right:6px}
-  .topics div{white-space:nowrap}
+  .topics p{margin:.2rem 0}
   input[type="text"], input[type="date"]{padding:.3rem .4rem;border:1px solid #bbb;border-radius:4px}
   .copy-md{position:absolute;left:-9999px;top:auto;width:1px;height:1px;opacity:0}
   .btn{display:inline-block;padding:.35rem .6rem;border:1px solid #444;text-decoration:none;border-radius:4px;background:#f7f7f7;cursor:pointer}
   .btn:disabled{opacity:.6;cursor:default}
   .hint{font-size:.85em;color:#666}
-  @media (max-width:900px){ .topics div{white-space:normal} }
+  @media (max-width:900px){ .topics p{white-space:normal} }
 </style>
 
 <h2>Результаты тестов</h2>
@@ -146,7 +162,7 @@ function build_markdown($row){
       <td><?=$r['answer_cnt']?></td>
       <td><?=$r['correct_cnt']?></td>
       <td><?=$acc?>%</td>
-      <td class="topics"><?=render_topics($r['topic_results_json'])?></td>
+      <td class="topics"><?=render_topics_html($r['topic_results_json'])?></td>
       <td>
         <?php $taId = 'md-'.$r['id']; ?>
         <textarea id="<?=$taId?>" class="copy-md" readonly><?=htmlspecialchars($md)?></textarea>
@@ -201,7 +217,6 @@ document.addEventListener('click', (e) => {
   const id = btn.dataset.target;
   const ta = document.getElementById(id);
   if (!ta) return;
-  // пробуем Clipboard API, иначе fallback
   const txt = ta.value;
   if (navigator.clipboard && navigator.clipboard.writeText) {
     navigator.clipboard.writeText(txt).then(()=>{
