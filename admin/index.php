@@ -4,6 +4,7 @@ $pdo = pdo();
 
 $from = $_GET['from'] ?? '';
 $to   = $_GET['to']   ?? '';
+$code = trim($_GET['code'] ?? ''); // ← новый фильтр по коду
 $page = max(1, intval($_GET['page'] ?? 1));
 $per  = 25;
 $offset = ($page - 1) * $per;
@@ -11,12 +12,26 @@ $offset = ($page - 1) * $per;
 $where = []; $params = [];
 if ($from) { $where[] = "s.created_at >= :from"; $params[':from'] = $from . " 00:00:00"; }
 if ($to)   { $where[] = "s.created_at <= :to";   $params[':to']   = $to   . " 23:59:59"; }
+
+// Фильтр по result_code: поддержка масок * и ?
+if ($code !== '') {
+  // Превращаем * -> % и ? -> _ для SQL LIKE, и если нет масок — ищем как подстроку
+  $like = strtr($code, ['*' => '%', '?' => '_']);
+  if (strpos($like, '%') === false && strpos($like, '_') === false) {
+    $like = '%' . $like . '%';
+  }
+  $where[] = "s.result_code LIKE :code";
+  $params[':code'] = $like;
+}
+
 $where_sql = $where ? ("WHERE " . implode(" AND ", $where)) : "";
 
+// Счётчик
 $cnt = $pdo->prepare("SELECT COUNT(*) FROM sessions s $where_sql");
 $cnt->execute($params);
 $total = (int)$cnt->fetchColumn();
 
+// Данные
 $sql = "SELECT s.id, s.result_code, s.telegram_id, s.created_at,
                COALESCE(SUM(a.is_correct),0) AS correct_cnt,
                COUNT(a.id) AS answer_cnt,
@@ -38,7 +53,6 @@ function render_topics($json){
   if (!$json) return '';
   $arr = json_decode($json, true);
   if (!is_array($arr) || empty($arr)) return '';
-  // отсортируем по возрастанию процента для наглядности
   usort($arr, function($a,$b){ return ($a['pct']??0) <=> ($b['pct']??0); });
   $out = [];
   foreach ($arr as $t) {
@@ -59,11 +73,13 @@ function render_topics($json){
   table{width:100%;border-collapse:collapse;margin-top:10px}
   th,td{border:1px solid #ddd;padding:8px;vertical-align:top}
   th{background:#f7f7f7;text-align:left}
-  .controls{margin:10px 0;display:flex;gap:8px;align-items:center}
+  .controls{margin:10px 0;display:flex;gap:8px;align-items:center;flex-wrap:wrap}
   .badge{display:inline-block;background:#eef;border:1px solid #99f;padding:2px 6px;border-radius:4px}
   .pagination a, .pagination b{margin-right:6px}
   .topics div{white-space:nowrap}
   a.btn{display:inline-block;padding:.4rem .6rem;border:1px solid #444;text-decoration:none;border-radius:4px}
+  input[type="text"]{padding:.3rem .4rem;border:1px solid #bbb;border-radius:4px}
+  .hint{font-size:.85em;color:#666}
 </style>
 
 <h2>Результаты тестов</h2>
@@ -71,8 +87,10 @@ function render_topics($json){
 <form class="controls" method="get">
   С даты: <input type="date" name="from" value="<?=htmlspecialchars($from)?>">
   По дату: <input type="date" name="to" value="<?=htmlspecialchars($to)?>">
+  Код: <input type="text" name="code" placeholder="например: A1B2C3D4" value="<?=htmlspecialchars($code)?>">
   <button type="submit">Фильтровать</button>
   <a class="btn" href="index.php">Сброс</a>
+  <span class="hint">Можно использовать * и ? для маски, или часть кода</span>
 </form>
 
 <p>Всего попыток: <b><?=$total?></b></p>
