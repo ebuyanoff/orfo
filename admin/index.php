@@ -142,7 +142,7 @@ function build_markdown($row){
     $title = $t['title'] ?? ('Тема '.$topic);
     $pct   = intval($t['pct'] ?? 0);
     $plain = normalize_host_path($t['rule_url'] ?? '', $topic);
-    $lines[] = "**{$title}:** {$pct}% {$plain}";
+    $lines[] = "{$title}: **{$pct}%** {$plain}";
   }
   $acc = ($row['answer_cnt'] ?? 0) ? round(($row['correct_cnt']/$row['answer_cnt'])*100) : 0;
   $lines[] = "";
