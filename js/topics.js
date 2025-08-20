@@ -5,7 +5,7 @@ window.TOPICS = {
   2: { title: 'Приставки ПРЕ и ПРИ',
        ruleUrl: '/rules/topic-2.html',
        ruleHtml: '<iframe class="rule-frame" src="rules/topic-2.html" loading="lazy"></iframe>' },
-  3: { title: 'НЕ слитно или раздельно',
+  3: { title: 'НЕ слитно и раздельно',
        ruleUrl: '/rules/topic-3.html',
        ruleHtml: '<iframe class="rule-frame" src="rules/topic-3.html" loading="lazy"></iframe>' },
 };
