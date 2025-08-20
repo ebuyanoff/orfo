@@ -42,6 +42,7 @@ html, body { margin: 0; background: #fff; color: #000; font-family: ui-monospace
 .rulepanel.open { transform: translateX(0); }
 .rulepanel__close { position:absolute; top:8px; right:10px; font-size:28px; line-height:1; background:transparent; border:none; cursor:pointer; }
 .rulepanel__inner { padding:24px 8%; padding-top:56px; overflow:auto; }
+.rule-frame{width:100%;min-height:360px;border:0;border-radius:6px;background:#fff}
 
 #copyresultid{display: inline-block;position:relative;padding-right:28px;cursor:copy;border-bottom:1px dashed silver;}
 #copyresultid:hover{border-bottom:1px dashed var(--blue); color:var(--blue);}
