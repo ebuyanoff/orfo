@@ -10,6 +10,7 @@ try {
     ]);
     $pdo->exec("SET NAMES {$MYSQL_CHARSET}");
   } else {
+    // SQLite
     $pdo = new PDO('sqlite:' . $SQLITE_PATH);
     $pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
   }
@@ -20,17 +21,20 @@ try {
   exit;
 }
 
-// migrations
+// --- migrations ---
 if ($DB_DRIVER === 'mysql') {
+  // sessions
   $pdo->exec("
     CREATE TABLE IF NOT EXISTS sessions (
       id INT UNSIGNED NOT NULL AUTO_INCREMENT,
       result_code VARCHAR(32) NOT NULL UNIQUE,
       telegram_id VARCHAR(32) NULL,
       created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+      topic_results_json TEXT NULL,
       PRIMARY KEY (id)
     ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
   ");
+  // answers
   $pdo->exec("
     CREATE TABLE IF NOT EXISTS answers (
       id INT UNSIGNED NOT NULL AUTO_INCREMENT,
@@ -48,15 +52,17 @@ if ($DB_DRIVER === 'mysql') {
       CONSTRAINT fk_answers_session FOREIGN KEY (session_id) REFERENCES sessions(id) ON DELETE CASCADE
     ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
   ");
-  // helpful unique to avoid duplicates by gap within a session
+  // уникальность ответа на конкретный гэп в рамках сессии
   try { $pdo->exec("ALTER TABLE answers ADD UNIQUE KEY uniq_session_gap (session_id, gap_id)"); } catch (Throwable $e) {}
 } else {
+  // SQLite
   $pdo->exec("
     CREATE TABLE IF NOT EXISTS sessions(
       id INTEGER PRIMARY KEY AUTOINCREMENT,
       result_code TEXT UNIQUE NOT NULL,
       telegram_id TEXT,
-      created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+      created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+      topic_results_json TEXT
     );
   ");
   $pdo->exec("
@@ -71,3 +77,12 @@ if ($DB_DRIVER === 'mysql') {
   ");
   $pdo->exec("CREATE UNIQUE INDEX IF NOT EXISTS uniq_session_gap ON answers(session_id, gap_id)");
 }
+
+// На всякий случай — добавить колонку, если её нет
+try {
+  if ($DB_DRIVER === 'mysql') {
+    $pdo->exec("ALTER TABLE sessions ADD COLUMN topic_results_json TEXT");
+  } else {
+    $pdo->exec("ALTER TABLE sessions ADD COLUMN topic_results_json TEXT");
+  }
+} catch (Throwable $e) { /* ignore if exists */ }

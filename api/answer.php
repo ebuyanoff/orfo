@@ -6,6 +6,7 @@ header('Access-Control-Allow-Headers: Content-Type');
 if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') { exit; }
 
 require __DIR__.'/db.php';
+
 $in = json_decode(file_get_contents('php://input'), true) ?? [];
 $code = $in['result_code'] ?? null;
 if (!$code) { http_response_code(400); echo json_encode(['error'=>'no code']); exit; }
@@ -17,11 +18,11 @@ if (!$sess) { http_response_code(404); echo json_encode(['error'=>'session not f
 
 $payload = [
   'session_id' => (int)$sess['id'],
-  'text_id'    => $in['textId']   ?? null,
-  'gap_id'     => $in['gapId']    ?? null,
+  'text_id'    => $in['textId']    ?? null,
+  'gap_id'     => $in['gapId']     ?? null,
   'topic'      => isset($in['topic']) ? (int)$in['topic'] : null,
-  'choice'     => $in['choice']   ?? null,
-  'correct'    => $in['correct']  ?? null,
+  'choice'     => $in['choice']    ?? null,
+  'correct'    => $in['correct']   ?? null,
   'is_correct' => !empty($in['isCorrect']) ? 1 : 0,
   'ts_ms'      => isset($in['timestamp']) ? (int)$in['timestamp'] : null
 ];
@@ -39,6 +40,7 @@ if ($DB_DRIVER === 'mysql') {
   $stmt = $pdo->prepare($sql);
   $stmt->execute($payload);
 } else {
+  // SQLite
   $sql = "INSERT INTO answers (session_id,text_id,gap_id,topic,choice,correct,is_correct,ts_ms)
           VALUES (:session_id,:text_id,:gap_id,:topic,:choice,:correct,:is_correct,:ts_ms)
           ON CONFLICT(session_id, gap_id) DO UPDATE SET
@@ -52,4 +54,46 @@ if ($DB_DRIVER === 'mysql') {
   $stmt->execute($payload);
 }
 
-echo json_encode(['ok'=>true]);
+// --- Aggregate per-topic results for this session and save to sessions.topic_results_json ---
+try {
+  $agg = $pdo->prepare("
+    SELECT topic,
+           SUM(CASE WHEN choice <> 'честно не знаю' THEN 1 ELSE 0 END) AS total,
+           SUM(CASE WHEN is_correct = 1 AND choice <> 'честно не знаю' THEN 1 ELSE 0 END) AS ok
+    FROM answers
+    WHERE session_id = :sid AND topic IS NOT NULL
+    GROUP BY topic
+  ");
+  $agg->execute([':sid' => $sess['id']]);
+  $rows = $agg->fetchAll(PDO::FETCH_ASSOC);
+
+  $topics = [];
+  foreach ($rows as $r) {
+    $t = (int)$r['topic'];
+    $total = (int)$r['total'];
+    $ok = (int)$r['ok'];
+    $pct = $total > 0 ? (int)round(($ok / $total) * 100) : 0;
+    $topics[] = [
+      'topic' => $t,
+      'rule_url' => "https://orfo.club/rules/topic-{$t}.html",
+      'pct' => $pct
+    ];
+  }
+
+  // Ensure the column exists (non-destructive)
+  try {
+    if ($DB_DRIVER === 'mysql') {
+      $pdo->exec("ALTER TABLE sessions ADD COLUMN topic_results_json TEXT");
+    } else {
+      $pdo->exec("ALTER TABLE sessions ADD COLUMN topic_results_json TEXT");
+    }
+  } catch (Throwable $e) { /* ignore if exists */ }
+
+  $upd = $pdo->prepare("UPDATE sessions SET topic_results_json = :json WHERE id = :sid");
+  $upd->execute([':json' => json_encode($topics, JSON_UNESCAPED_UNICODE|JSON_UNESCAPED_SLASHES), ':sid' => $sess['id']]);
+
+  echo json_encode(['ok'=>true, 'topics'=>$topics], JSON_UNESCAPED_UNICODE|JSON_UNESCAPED_SLASHES);
+} catch (Throwable $e) {
+  // не ломаем поток, если агрегация упала
+  echo json_encode(['ok'=>true]);
+}
