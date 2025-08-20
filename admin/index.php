@@ -38,13 +38,15 @@ function render_topics($json){
   if (!$json) return '';
   $arr = json_decode($json, true);
   if (!is_array($arr) || empty($arr)) return '';
+  // отсортируем по возрастанию процента для наглядности
+  usort($arr, function($a,$b){ return ($a['pct']??0) <=> ($b['pct']??0); });
   $out = [];
   foreach ($arr as $t) {
     $topic = intval($t['topic'] ?? 0);
     $pct   = intval($t['pct'] ?? 0);
+    $title = htmlspecialchars($t['title'] ?? ('Тема '.$topic));
     $url   = htmlspecialchars($t['rule_url'] ?? ("https://orfo.club/rules/topic-".$topic.".html"));
-    $out[] = "<div>Тема {$topic}: <a href='{$url}' target='_blank' rel='noopener'>правило</a> — <b>{$pct}%</b></div>";
-    if (count($out) >= 5) break;
+    $out[] = "<div><b>{$title}</b> — <a href='{$url}' target='_blank' rel='noopener'>правило</a> — <b>{$pct}%</b></div>";
   }
   return implode('', $out);
 }

@@ -10,7 +10,6 @@ try {
     ]);
     $pdo->exec("SET NAMES {$MYSQL_CHARSET}");
   } else {
-    // SQLite
     $pdo = new PDO('sqlite:' . $SQLITE_PATH);
     $pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
   }
@@ -21,7 +20,7 @@ try {
   exit;
 }
 
-// --- migrations ---
+/* === MIGRATIONS === */
 if ($DB_DRIVER === 'mysql') {
   // sessions
   $pdo->exec("
@@ -34,7 +33,8 @@ if ($DB_DRIVER === 'mysql') {
       PRIMARY KEY (id)
     ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
   ");
-  // answers
+
+  // answers (+ колонки topic_title, topic_rule_url)
   $pdo->exec("
     CREATE TABLE IF NOT EXISTS answers (
       id INT UNSIGNED NOT NULL AUTO_INCREMENT,
@@ -42,6 +42,8 @@ if ($DB_DRIVER === 'mysql') {
       text_id VARCHAR(255) NULL,
       gap_id  VARCHAR(255) NULL,
       topic   INT NULL,
+      topic_title VARCHAR(255) NULL,
+      topic_rule_url VARCHAR(255) NULL,
       choice  VARCHAR(255) NULL,
       correct VARCHAR(255) NULL,
       is_correct TINYINT(1) NULL,
@@ -52,8 +54,13 @@ if ($DB_DRIVER === 'mysql') {
       CONSTRAINT fk_answers_session FOREIGN KEY (session_id) REFERENCES sessions(id) ON DELETE CASCADE
     ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
   ");
-  // уникальность ответа на конкретный гэп в рамках сессии
+  // уникальность (session_id, gap_id)
   try { $pdo->exec("ALTER TABLE answers ADD UNIQUE KEY uniq_session_gap (session_id, gap_id)"); } catch (Throwable $e) {}
+  // догоняем недостающие колонки на старой БД
+  foreach (['topic_title VARCHAR(255) NULL','topic_rule_url VARCHAR(255) NULL'] as $ddl) {
+    try { $pdo->exec("ALTER TABLE answers ADD COLUMN $ddl"); } catch (Throwable $e) {}
+  }
+  try { $pdo->exec("ALTER TABLE sessions ADD COLUMN topic_results_json TEXT"); } catch (Throwable $e) {}
 } else {
   // SQLite
   $pdo->exec("
@@ -70,19 +77,17 @@ if ($DB_DRIVER === 'mysql') {
       id INTEGER PRIMARY KEY AUTOINCREMENT,
       session_id INTEGER NOT NULL,
       text_id TEXT, gap_id TEXT, topic INTEGER,
+      topic_title TEXT, topic_rule_url TEXT,
       choice TEXT, correct TEXT, is_correct INTEGER, ts_ms INTEGER,
       created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
       FOREIGN KEY(session_id) REFERENCES sessions(id) ON DELETE CASCADE
     );
   ");
   $pdo->exec("CREATE UNIQUE INDEX IF NOT EXISTS uniq_session_gap ON answers(session_id, gap_id)");
-}
-
-// На всякий случай — добавить колонку, если её нет
-try {
-  if ($DB_DRIVER === 'mysql') {
-    $pdo->exec("ALTER TABLE sessions ADD COLUMN topic_results_json TEXT");
-  } else {
-    $pdo->exec("ALTER TABLE sessions ADD COLUMN topic_results_json TEXT");
+  // догоняем колонки
+  foreach (['ALTER TABLE answers ADD COLUMN topic_title TEXT',
+            'ALTER TABLE answers ADD COLUMN topic_rule_url TEXT',
+            'ALTER TABLE sessions ADD COLUMN topic_results_json TEXT'] as $ddl) {
+    try { $pdo->exec($ddl); } catch (Throwable $e) {}
   }
-} catch (Throwable $e) { /* ignore if exists */ }
+}

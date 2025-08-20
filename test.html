@@ -165,23 +165,27 @@
     $btnL.textContent = g.btnLeft;
     $btnR.textContent = g.btnRight;
   }
+  
+function sendMetricPayload(g, choice, ok) {
+  const payload = {
+    textId: window.TEXTS[g.textIndex].id,
+    gapId: g.id,
+    topic: g.topic,
+    topicTitle: window.TOPICS[g.topic]?.title || '',
+    topicRuleUrl: window.TOPICS[g.topic]?.ruleUrl || '',   // ← НОВОЕ
+    choice: choice,
+    correct: g.correct,
+    isCorrect: !!ok,
+    timestamp: Date.now(),
+    result_code: RESULT_CODE
+  };
+  fetch(new URL('answer.php', API_BASE), {
+    method: 'POST',
+    headers: {'Content-Type':'application/json'},
+    body: JSON.stringify(payload)
+  }).catch(()=>{});
+}
 
-  function sendMetricPayload(g, choice, ok) {
-    const payload = {
-      textId: window.TEXTS[g.textIndex].id,
-      gapId: g.id,
-      topic: g.topic,
-      topicTitle: window.TOPICS[g.topic]?.title || '',
-      choice: choice,
-      correct: g.correct,
-      isCorrect: ok,
-      textIndex: g.textIndex,
-      gapIndexGlobal: gapCursor,
-      timestamp: Date.now()
-    };
-    document.dispatchEvent(new CustomEvent('gapAnswer', { detail: payload }));
-    if (typeof window.onGapAnswer === 'function') window.onGapAnswer(payload);
-  }
 
   function answer(choice) {
     if (waitingNext) return;

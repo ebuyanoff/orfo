@@ -17,21 +17,25 @@ $sess = $stmt->fetch(PDO::FETCH_ASSOC);
 if (!$sess) { http_response_code(404); echo json_encode(['error'=>'session not found']); exit; }
 
 $payload = [
-  'session_id' => (int)$sess['id'],
-  'text_id'    => $in['textId']    ?? null,
-  'gap_id'     => $in['gapId']     ?? null,
-  'topic'      => isset($in['topic']) ? (int)$in['topic'] : null,
-  'choice'     => $in['choice']    ?? null,
-  'correct'    => $in['correct']   ?? null,
-  'is_correct' => !empty($in['isCorrect']) ? 1 : 0,
-  'ts_ms'      => isset($in['timestamp']) ? (int)$in['timestamp'] : null
+  'session_id'     => (int)$sess['id'],
+  'text_id'        => $in['textId']        ?? null,
+  'gap_id'         => $in['gapId']         ?? null,
+  'topic'          => isset($in['topic']) ? (int)$in['topic'] : null,
+  'topic_title'    => $in['topicTitle']    ?? null,
+  'topic_rule_url' => $in['topicRuleUrl']  ?? null,
+  'choice'         => $in['choice']        ?? null,
+  'correct'        => $in['correct']       ?? null,
+  'is_correct'     => !empty($in['isCorrect']) ? 1 : 0,
+  'ts_ms'          => isset($in['timestamp']) ? (int)$in['timestamp'] : null
 ];
 
 if ($DB_DRIVER === 'mysql') {
-  $sql = "INSERT INTO answers (session_id,text_id,gap_id,topic,choice,correct,is_correct,ts_ms)
-          VALUES (:session_id,:text_id,:gap_id,:topic,:choice,:correct,:is_correct,:ts_ms)
+  $sql = "INSERT INTO answers (session_id,text_id,gap_id,topic,topic_title,topic_rule_url,choice,correct,is_correct,ts_ms)
+          VALUES (:session_id,:text_id,:gap_id,:topic,:topic_title,:topic_rule_url,:choice,:correct,:is_correct,:ts_ms)
           ON DUPLICATE KEY UPDATE
             topic=VALUES(topic),
+            topic_title=VALUES(topic_title),
+            topic_rule_url=VALUES(topic_rule_url),
             choice=VALUES(choice),
             correct=VALUES(correct),
             is_correct=VALUES(is_correct),
@@ -41,10 +45,12 @@ if ($DB_DRIVER === 'mysql') {
   $stmt->execute($payload);
 } else {
   // SQLite
-  $sql = "INSERT INTO answers (session_id,text_id,gap_id,topic,choice,correct,is_correct,ts_ms)
-          VALUES (:session_id,:text_id,:gap_id,:topic,:choice,:correct,:is_correct,:ts_ms)
+  $sql = "INSERT INTO answers (session_id,text_id,gap_id,topic,topic_title,topic_rule_url,choice,correct,is_correct,ts_ms)
+          VALUES (:session_id,:text_id,:gap_id,:topic,:topic_title,:topic_rule_url,:choice,:correct,:is_correct,:ts_ms)
           ON CONFLICT(session_id, gap_id) DO UPDATE SET
             topic=excluded.topic,
+            topic_title=excluded.topic_title,
+            topic_rule_url=excluded.topic_rule_url,
             choice=excluded.choice,
             correct=excluded.correct,
             is_correct=excluded.is_correct,
@@ -54,33 +60,41 @@ if ($DB_DRIVER === 'mysql') {
   $stmt->execute($payload);
 }
 
-// --- Aggregate per-topic results for this session and save to sessions.topic_results_json ---
+// --- Агрегируем проценты по темам и сохраняем в sessions.topic_results_json ---
 try {
   $agg = $pdo->prepare("
-    SELECT topic,
-           SUM(CASE WHEN choice <> 'честно не знаю' THEN 1 ELSE 0 END) AS total,
-           SUM(CASE WHEN is_correct = 1 AND choice <> 'честно не знаю' THEN 1 ELSE 0 END) AS ok
+    SELECT
+      topic,
+      MAX(NULLIF(TRIM(topic_title), '')) AS title,
+      MAX(NULLIF(TRIM(topic_rule_url), '')) AS rule_url,
+      SUM(CASE WHEN choice <> 'честно не знаю' THEN 1 ELSE 0 END) AS total,
+      SUM(CASE WHEN is_correct = 1 AND choice <> 'честно не знаю' THEN 1 ELSE 0 END) AS ok
     FROM answers
     WHERE session_id = :sid AND topic IS NOT NULL
     GROUP BY topic
+    ORDER BY topic
   ");
   $agg->execute([':sid' => $sess['id']]);
   $rows = $agg->fetchAll(PDO::FETCH_ASSOC);
 
   $topics = [];
   foreach ($rows as $r) {
-    $t = (int)$r['topic'];
-    $total = (int)$r['total'];
-    $ok = (int)$r['ok'];
-    $pct = $total > 0 ? (int)round(($ok / $total) * 100) : 0;
+    $t      = (int)$r['topic'];
+    $total  = (int)$r['total'];
+    $ok     = (int)$r['ok'];
+    $pct    = $total > 0 ? (int)round(($ok / $total) * 100) : 0;
+    $title  = $r['title'] ?: ('Тема ' . $t);
+    $rule   = $r['rule_url'] ?: ("https://orfo.club/rules/topic-{$t}.html");
+
     $topics[] = [
-      'topic' => $t,
-      'rule_url' => "https://orfo.club/rules/topic-{$t}.html",
-      'pct' => $pct
+      'topic'    => $t,
+      'title'    => $title,
+      'rule_url' => $rule,
+      'pct'      => $pct
     ];
   }
 
-  // Ensure the column exists (non-destructive)
+  // На всякий случай пытаемся добавить колонку (если старая БД)
   try {
     if ($DB_DRIVER === 'mysql') {
       $pdo->exec("ALTER TABLE sessions ADD COLUMN topic_results_json TEXT");
@@ -94,6 +108,5 @@ try {
 
   echo json_encode(['ok'=>true, 'topics'=>$topics], JSON_UNESCAPED_UNICODE|JSON_UNESCAPED_SLASHES);
 } catch (Throwable $e) {
-  // не ломаем поток, если агрегация упала
   echo json_encode(['ok'=>true]);
 }
