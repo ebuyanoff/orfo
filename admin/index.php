@@ -164,7 +164,7 @@ th{background:#f7f7f7;text-align:left}
 .badge{display:inline-block;background:#eef;border:1px solid #99f;padding:2px 6px;border-radius:4px}
 .pagination a, .pagination b{margin-right:6px}
 .topics p{margin:.2rem 0}
-input[type="text"], input[type="date"]{padding:.3rem .4rem;border:0;}
+input[type="text"], input[type="date"] {padding:.3rem .4rem;border:1px solid silver;}
 .copy-md{position:absolute;left:-9999px;top:auto;width:1px;height:1px;opacity:0}
 .btn{display:inline-block;padding:.35rem .6rem;border:1px solid #444;text-decoration:none;border-radius:4px;background:#f7f7f7;cursor:pointer}
 .btn:disabled{opacity:.6;cursor:default}
@@ -174,7 +174,8 @@ input[type="text"], input[type="date"]{padding:.3rem .4rem;border:0;}
 .tg-input.error{border-color:#c62828; box-shadow:0 0 0 2px rgba(198,40,40,.15)}
 .topics p {font-size:12px; line-height:1.4; margin:0; padding:0; display:inline-block; max-width:200px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;}
 .topics p a {color:#333; text-decoration:none;}
-table ::placeholder {color:#999;opacity:0.2;}
+::placeholder {color:#999;opacity:0.2;}
+table input[type="text"] {border:none;}
 </style>
 
 <h2>Результаты тестов</h2>
