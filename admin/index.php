@@ -2,11 +2,12 @@
 require __DIR__.'/_common.php'; require_auth();
 $pdo = pdo();
 
-$from = $_GET['from'] ?? '';
-$to   = $_GET['to']   ?? '';
-$code = trim($_GET['code'] ?? '');
-$page = max(1, intval($_GET['page'] ?? 1));
-$per  = 200; // пагинация по 200 строк
+$from   = $_GET['from']   ?? '';
+$to     = $_GET['to']     ?? '';
+$code   = trim($_GET['code'] ?? '');
+$has_tg = (($_GET['has_tg'] ?? '') === '1') ? '1' : '';
+$page   = max(1, intval($_GET['page'] ?? 1));
+$per    = 200; // пагинация по 200 строк
 $offset = ($page - 1) * $per;
 
 $where = []; $params = [];
@@ -21,14 +22,61 @@ if ($code !== '') {
   $params[':code'] = $like;
 }
 
+// Фильтр «есть Telegram»
+if ($has_tg === '1') {
+  $where[] = "(s.telegram_id IS NOT NULL AND TRIM(s.telegram_id) <> '')";
+}
+
 $where_sql = $where ? ("WHERE " . implode(" AND ", $where)) : "";
+
+/* ===== CSV экспорт (вся выборка) ===== */
+if (isset($_GET['export']) && $_GET['export'] === 'csv') {
+  $sql_exp = "SELECT s.id, s.result_code, s.telegram_id, s.created_at,
+                     COALESCE(SUM(a.is_correct),0) AS correct_cnt,
+                     COUNT(a.id) AS answer_cnt,
+                     s.topic_results_json
+              FROM sessions s
+              LEFT JOIN answers a ON a.session_id = s.id
+              $where_sql
+              GROUP BY s.id
+              ORDER BY s.created_at DESC";
+  $st = $pdo->prepare($sql_exp);
+  foreach ($params as $k=>$v) $st->bindValue($k,$v);
+  $st->execute();
+
+  header('Content-Type: text/csv; charset=utf-8');
+  header('Content-Disposition: attachment; filename="sessions_export_'.date('Ymd_His').'.csv"');
+
+  $out = fopen('php://output','w');
+  // BOM для Excel
+  fprintf($out, chr(0xEF).chr(0xBB).chr(0xBF));
+  fputcsv($out, ['id','result_code','created_at','telegram_id','answer_cnt','correct_cnt','accuracy_pct','topic_results_json']);
+
+  while ($r = $st->fetch(PDO::FETCH_ASSOC)) {
+    $acc = $r['answer_cnt'] ? round(($r['correct_cnt']/$r['answer_cnt'])*100) : 0;
+    fputcsv($out, [
+      $r['id'],
+      $r['result_code'],
+      $r['created_at'],
+      $r['telegram_id'],
+      $r['answer_cnt'],
+      $r['correct_cnt'],
+      $acc,
+      $r['topic_results_json']
+    ]);
+  }
+  fclose($out);
+  exit;
+}
+
+/* ===== обычный список ===== */
 
 // Счётчик
 $cnt = $pdo->prepare("SELECT COUNT(*) FROM sessions s $where_sql");
 $cnt->execute($params);
 $total = (int)$cnt->fetchColumn();
 
-// Данные
+// Данные (с пагинацией)
 $sql = "SELECT s.id, s.result_code, s.telegram_id, s.created_at,
                COALESCE(SUM(a.is_correct),0) AS correct_cnt,
                COUNT(a.id) AS answer_cnt,
@@ -101,6 +149,8 @@ function build_markdown($row){
   $lines[] = "Итоговая точность: **{$acc}%**";
   return implode("\n", $lines);
 }
+
+/* ===== UI ===== */
 ?>
 <!doctype html>
 <meta charset="utf-8">
@@ -118,7 +168,6 @@ function build_markdown($row){
   .copy-md{position:absolute;left:-9999px;top:auto;width:1px;height:1px;opacity:0}
   .btn{display:inline-block;padding:.35rem .6rem;border:1px solid #444;text-decoration:none;border-radius:4px;background:#f7f7f7;cursor:pointer}
   .btn:disabled{opacity:.6;cursor:default}
-  .hint{font-size:.85em;color:#666}
   .tg-input{min-width:180px;max-width:240px}
   .tg-input.saving{border-color:#888; background:#fafafa}
   .tg-input.saved{border-color:#2e7d32; box-shadow:0 0 0 2px rgba(46,125,50,.15)}
@@ -132,7 +181,12 @@ function build_markdown($row){
   С даты: <input type="date" name="from" value="<?=htmlspecialchars($from)?>">
   По дату: <input type="date" name="to" value="<?=htmlspecialchars($to)?>">
   Код: <input type="text" name="code" placeholder="например: A1B2C3D4 или G7K*" value="<?=htmlspecialchars($code)?>">
-  <span class="hint">Автопоиск: даты по изменению, код — через 400 мс после ввода</span>
+  <label><input type="checkbox" name="has_tg" value="1" <?= $has_tg==='1'?'checked':''; ?>> есть Telegram</label>
+  <?php
+    $qs = ['from'=>$from,'to'=>$to,'code'=>$code,'has_tg'=>$has_tg,'export'=>'csv'];
+    $csv_link = '?'.http_build_query($qs);
+  ?>
+  <a class="btn" href="<?=$csv_link?>">Скачать CSV</a>
 </form>
 
 <p>Всего попыток: <b><?=$total?></b></p>
@@ -187,10 +241,10 @@ function build_markdown($row){
 <div class="pagination">
 <?php
   $pages = max(1, ceil($total / $per));
-  $qs = $_GET; unset($qs['page']);
+  $qs_pag = ['from'=>$from,'to'=>$to,'code'=>$code,'has_tg'=>$has_tg];
   for ($i=1; $i<=$pages; $i++) {
-    $qs['page'] = $i;
-    $q = http_build_query($qs);
+    $qs_pag['page'] = $i;
+    $q = http_build_query($qs_pag);
     if ($i == $page) echo "<b>$i</b> ";
     else echo "<a href=\"?$q\">$i</a> ";
   }
@@ -205,17 +259,15 @@ function build_markdown($row){
   const submit = () => { form.requestSubmit ? form.requestSubmit() : form.submit(); };
   let t=null;
 
-  // по датам — сразу
-  form.querySelectorAll('input[type="date"]').forEach(el=>{
+  form.querySelectorAll('input[type="date"], input[name="has_tg"]').forEach(el=>{
     el.addEventListener('change', submit);
   });
 
-  // по коду — с debounce 400ms
   const code = form.querySelector('input[name="code"]');
   if (code) {
     code.addEventListener('input', () => {
       clearTimeout(t);
-      t = setTimeout(submit, 400);
+      t = setTimeout(submit, 400); // тихий debounce
     });
   }
 })();
@@ -265,7 +317,7 @@ document.addEventListener('click', (e) => {
     const id = parseInt(el.dataset.id, 10);
     const triggerSave = () => {
       clearTimeout(timer);
-      timer = setTimeout(()=> save(id, el.value.trim(), el), 500); // debounce 500мс
+      timer = setTimeout(()=> save(id, el.value.trim(), el), 500);
     };
     el.addEventListener('input', triggerSave);
     el.addEventListener('change', triggerSave);
@@ -274,7 +326,6 @@ document.addEventListener('click', (e) => {
       if (ev.key === 'Escape') { ev.target.value = ev.target.defaultValue; ev.target.blur(); }
     });
     el.addEventListener('blur', ()=> {
-      // финальный сейв на blur без задержки
       clearTimeout(timer);
       save(id, el.value.trim(), el);
     });
