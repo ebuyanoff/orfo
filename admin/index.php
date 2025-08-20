@@ -76,7 +76,7 @@ function render_topics_html($json){
     $topic = intval($t['topic'] ?? 0);
     $pct   = intval($t['pct'] ?? 0);
     $title = htmlspecialchars($t['title'] ?? ('Тема '.$topic));
-    $out[] = "<p>{$title}: <b>{$pct}%</b>.</p>";
+    $out[] = "<p><a href={$rule_url}>{$title}</a>: <b>{$pct}%</b>.</p>";
   }
   return implode('', $out);
 }
@@ -95,7 +95,7 @@ function build_markdown($row){
     $title = $t['title'] ?? ('Тема '.$topic);
     $pct   = intval($t['pct'] ?? 0);
     $plain = normalize_host_path($t['rule_url'] ?? '', $topic);
-    $lines[] = "**{$title}:** {$pct}% — {$plain}";
+    $lines[] = "**{$title}:** {$pct}% {$plain}";
   }
   $acc = ($row['answer_cnt'] ?? 0) ? round(($row['correct_cnt']/$row['answer_cnt'])*100) : 0;
   $lines[] = "";
