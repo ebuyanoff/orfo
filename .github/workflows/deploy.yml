@@ -1,2 +1,13 @@
+name: Deploy (manual)
+
 on:
-  workflow_dispatch:   # только ручной запуск
+  workflow_dispatch:   # запуск только кнопкой в Actions
+
+permissions:
+  contents: read
+
+jobs:
+  ok:
+    runs-on: ubuntu-latest
+    steps:
+      - run: echo "Manual run OK"
