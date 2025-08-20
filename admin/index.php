@@ -156,25 +156,25 @@ function build_markdown($row){
 <meta charset="utf-8">
 <title>Админка — результаты</title>
 <style>
-  body{font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;max-width:1200px;margin:20px auto;padding:0 16px}
-  table{width:100%;border-collapse:collapse;margin-top:10px}
-  th,td{border:1px solid #ddd;padding:8px;vertical-align:top}
-  th{background:#f7f7f7;text-align:left}
-  .controls{margin:10px 0;display:flex;gap:8px;align-items:center;flex-wrap:wrap}
-  .badge{display:inline-block;background:#eef;border:1px solid #99f;padding:2px 6px;border-radius:4px}
-  .pagination a, .pagination b{margin-right:6px}
-  .topics p{margin:.2rem 0}
-  input[type="text"], input[type="date"]{padding:.3rem .4rem;border:0;}
-  .copy-md{position:absolute;left:-9999px;top:auto;width:1px;height:1px;opacity:0}
-  .btn{display:inline-block;padding:.35rem .6rem;border:1px solid #444;text-decoration:none;border-radius:4px;background:#f7f7f7;cursor:pointer}
-  .btn:disabled{opacity:.6;cursor:default}
-  .tg-input{min-width:180px;max-width:240px}
-  .tg-input.saving{border-color:#888; background:#fafafa}
-  .tg-input.saved{border-color:#2e7d32; box-shadow:0 0 0 2px rgba(46,125,50,.15)}
-  .tg-input.error{border-color:#c62828; box-shadow:0 0 0 2px rgba(198,40,40,.15)}
-   .topics p {font-size:12px; line-height:1.4; margin:0; padding:0; display:inline-block; max-width:200px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;}
-   ::placeholder {color:#999;opacity:0.2;}
-
+body{font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;max-width:1200px;margin:20px auto;padding:0 16px}
+table{width:100%;border-collapse:collapse;margin-top:10px}
+th,td{border:1px solid #ddd;padding:8px;vertical-align:top}
+th{background:#f7f7f7;text-align:left}
+.controls{margin:10px 0;display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.badge{display:inline-block;background:#eef;border:1px solid #99f;padding:2px 6px;border-radius:4px}
+.pagination a, .pagination b{margin-right:6px}
+.topics p{margin:.2rem 0}
+input[type="text"], input[type="date"]{padding:.3rem .4rem;border:0;}
+.copy-md{position:absolute;left:-9999px;top:auto;width:1px;height:1px;opacity:0}
+.btn{display:inline-block;padding:.35rem .6rem;border:1px solid #444;text-decoration:none;border-radius:4px;background:#f7f7f7;cursor:pointer}
+.btn:disabled{opacity:.6;cursor:default}
+.tg-input{min-width:180px;max-width:240px}
+.tg-input.saving{border-color:#888; background:#fafafa}
+.tg-input.saved{border-color:#2e7d32; box-shadow:0 0 0 2px rgba(46,125,50,.15)}
+.tg-input.error{border-color:#c62828; box-shadow:0 0 0 2px rgba(198,40,40,.15)}
+.topics p {font-size:12px; line-height:1.4; margin:0; padding:0; display:inline-block; max-width:200px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;}
+.topics p a {color:#333; text-decoration:none;}
+::placeholder {color:#999;opacity:0.2;}
 </style>
 
 <h2>Результаты тестов</h2>
@@ -223,7 +223,7 @@ function build_markdown($row){
           class="tg-input"
           data-id="<?=$r['id']?>"
           value="<?=htmlspecialchars($r['telegram_id'] ?? '')?>"
-          placeholder="@username или numeric ID">
+          placeholder="@username">
       </td>
       <td><?=$r['answer_cnt']?></td>
       <td><?=$r['correct_cnt']?></td>
