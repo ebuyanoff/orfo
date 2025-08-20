@@ -6,16 +6,9 @@
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <link rel="stylesheet" href="css/test.css">
 
-  <!-- Убрали стиль для iframe: теперь подгружаем HTML напрямую -->
+  <!-- стиль для iframe с правилами -->
   <style>
-    .rulepanel { position: fixed; right: 0; top: 0; bottom: 0; width: min(720px, 100%); background: #fff; transform: translateX(100%); transition: transform .25s ease; box-shadow: -6px 0 16px rgba(0,0,0,.15); z-index: 20; }
-    .rulepanel.open { transform: translateX(0); }
-    .rulepanel__inner { padding: 24px; max-height: 100%; overflow: auto; }
-    .overlay { position: fixed; inset: 0; background: rgba(0,0,0,.35); opacity: 0; visibility: hidden; transition: opacity .2s ease, visibility .2s step-end; z-index: 15; }
-    .overlay.open { opacity: 1; visibility: visible; transition: opacity .2s ease; }
-    .rulepanel__close { position: absolute; top: 8px; right: 8px; font-size: 28px; line-height: 1; background: transparent; border: 0; cursor: pointer; }
-    .rule-loading { color: #666; font-style: italic; }
-    .rule-error { color: #b00020; }
+    .rule-frame{width:100%;min-height:360px;border:0;border-radius:6px;background:#fff}
   </style>
 </head>
 <body>
@@ -61,7 +54,7 @@
     <div class="rulepanel__inner" id="rulecontent"></div>
   </aside>
 
-  <script src="js/topics.js?v=2"></script>
+  <script src="js/topics.js?v=1"></script>
   <script src="js/texts.js?v=1"></script>
 
 <script>
@@ -290,43 +283,18 @@
     renderText();
   }
 
-  // ====== ПРАВИЛА: открытие/закрытие + загрузка без iframe ======
-
-  function normalizeRulesHref(href) {
-    // убираем ведущий "/" чтобы корректно работало на GitHub Pages/статике
-    if (href.startsWith('/')) return href.slice(1);
-    return href;
-  }
-
+  // Правила: открытие/закрытие
   function openRule(topic) {
     const rule = window.TOPICS[topic];
     if (!rule) return;
-
+    const inner = rule.ruleHtml && rule.ruleHtml.trim()
+      ? rule.ruleHtml
+      : `<h2>${rule.title}</h2>`;
+    $ruleContent.innerHTML = inner;
     $overlay.classList.add('open');
     $overlay.setAttribute('aria-hidden','false');
     $rulePanel.classList.add('open');
     $rulePanel.setAttribute('aria-hidden','false');
-
-    // Плейсхолдер
-    $ruleContent.innerHTML = `<p class="rule-loading">Загрузка правила: <code>${escapeHtml(rule.title)}</code>…</p>`;
-
-    const url = normalizeRulesHref(rule.ruleUrl || '');
-    if (!url) {
-      $ruleContent.innerHTML = `<p class="rule-error">Не указан путь к файлу правила.</p>`;
-      return;
-    }
-
-    // Загружаем HTML и рендерим внутрь панели
-    fetch(url, { credentials: 'same-origin' })
-      .then(resp => {
-        if (!resp.ok) throw new Error(`Ошибка ${resp.status} при загрузке ${url}`);
-        return resp.text();
-      })
-      .then(html => renderRule(html, url))
-      .catch(err => {
-        console.error(err);
-        $ruleContent.innerHTML = `<p class="rule-error">Не удалось загрузить правило: ${escapeHtml(err.message)}</p>`;
-      });
   }
 
   function closeRule() {
@@ -355,65 +323,6 @@
     const topic = +row.dataset.topic;
     openRule(topic);
   });
-
-  // ====== РЕНДЕР ПРАВИЛА В ПАНЕЛИ ======
-
-  function renderRule(htmlString, sourceUrl) {
-    const baseHref = sourceUrl.replace(/[^\/]+$/, ''); // папка rules/
-    const parser = new DOMParser();
-    const doc = parser.parseFromString(htmlString, 'text/html');
-
-    rewriteRelativeUrls(doc, baseHref);
-
-    // Сбрасываем контент
-    $ruleContent.replaceChildren();
-
-    // Переносим стили head (link/style) внутрь панели, чтобы правило выглядело как надо
-    doc.querySelectorAll('link[rel="stylesheet"], style').forEach((node) => {
-      $ruleContent.appendChild(node.cloneNode(true));
-    });
-
-    // Переносим контент body
-    [...doc.body.childNodes].forEach((node) => {
-      $ruleContent.appendChild(node.cloneNode(true));
-    });
-
-    // «Оживляем» скрипты
-    reexecuteScripts($ruleContent);
-  }
-
-  function rewriteRelativeUrls(doc, baseHref) {
-    const rewrite = (el, attr) => {
-      const val = el.getAttribute(attr);
-      if (!val) return;
-      const isAbsolute = /^(?:[a-z]+:)?\/\//i.test(val) || val.startsWith('/') || val.startsWith('#') || val.startsWith('data:');
-      if (isAbsolute) return;
-      el.setAttribute(attr, baseHref + val);
-    };
-    doc.querySelectorAll('a[href]').forEach((el) => rewrite(el, 'href'));
-    doc.querySelectorAll('img[src]').forEach((el) => rewrite(el, 'src'));
-    doc.querySelectorAll('script[src]').forEach((el) => rewrite(el, 'src'));
-    doc.querySelectorAll('link[href]').forEach((el) => rewrite(el, 'href'));
-    doc.querySelectorAll('source[src]').forEach((el) => rewrite(el, 'src'));
-    doc.querySelectorAll('video[src]').forEach((el) => rewrite(el, 'src'));
-    doc.querySelectorAll('audio[src]').forEach((el) => rewrite(el, 'src'));
-  }
-
-  function reexecuteScripts(root) {
-    const scripts = root.querySelectorAll('script');
-    scripts.forEach((old) => {
-      const s = document.createElement('script');
-      [...old.attributes].forEach(({ name, value }) => s.setAttribute(name, value));
-      if (old.src) { s.src = old.src; } else { s.textContent = old.textContent; }
-      old.replaceWith(s);
-    });
-  }
-
-  function escapeHtml(s) {
-    return (s || '').replace(/[&<>"']/g, (ch) => ({
-      '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#039;'
-    }[ch]));
-  }
 
   // Кнопки 
   $btnL.addEventListener('click', () => { if (!waitingNext) answer($btnL.textContent); });
