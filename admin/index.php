@@ -123,7 +123,7 @@ function render_topics_html($json){
     $pct   = intval($t['pct'] ?? 0);
     $title = htmlspecialchars($t['title'] ?? ('Тема '.$topic));
     $url   = htmlspecialchars($t['rule_url'] ?? ("https://orfo.club/rules/topic-".$topic.".html"));
-    $out[] = "<p><a href='{$url}' target='_blank' rel='noopener'>{$title}</a>: <b>{$pct}%</b>.</p>";
+    $out[] = "<p class='topicintable'><a href='{$url}' target='_blank' rel='noopener'>{$title}</a>: <b>{$pct}%</b>.</p>";
   }
   return implode('', $out);
 }
@@ -142,7 +142,7 @@ function build_markdown($row){
     $title = $t['title'] ?? ('Тема '.$topic);
     $pct   = intval($t['pct'] ?? 0);
     $plain = normalize_host_path($t['rule_url'] ?? '', $topic);
-    $lines[] = "**{$title}:** {$pct}% — {$plain}";
+    $lines[] = "**{$title}:** {$pct}% {$plain}";
   }
   $acc = ($row['answer_cnt'] ?? 0) ? round(($row['correct_cnt']/$row['answer_cnt'])*100) : 0;
   $lines[] = "";
@@ -164,7 +164,7 @@ function build_markdown($row){
   .badge{display:inline-block;background:#eef;border:1px solid #99f;padding:2px 6px;border-radius:4px}
   .pagination a, .pagination b{margin-right:6px}
   .topics p{margin:.2rem 0}
-  input[type="text"], input[type="date"]{padding:.3rem .4rem;border:1px solid #bbb;border-radius:4px}
+  input[type="text"], input[type="date"]{padding:.3rem .4rem;border:0;}
   .copy-md{position:absolute;left:-9999px;top:auto;width:1px;height:1px;opacity:0}
   .btn{display:inline-block;padding:.35rem .6rem;border:1px solid #444;text-decoration:none;border-radius:4px;background:#f7f7f7;cursor:pointer}
   .btn:disabled{opacity:.6;cursor:default}
@@ -172,14 +172,16 @@ function build_markdown($row){
   .tg-input.saving{border-color:#888; background:#fafafa}
   .tg-input.saved{border-color:#2e7d32; box-shadow:0 0 0 2px rgba(46,125,50,.15)}
   .tg-input.error{border-color:#c62828; box-shadow:0 0 0 2px rgba(198,40,40,.15)}
-  @media (max-width:900px){ .topics p{white-space:normal} }
+   .topics p {font-size:12px; line-height:1.4; margin:0; padding:0; display:inline-block; max-width:200px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;}
+   ::placeholder {color:#999;opacity:0.2;}
+
 </style>
 
 <h2>Результаты тестов</h2>
 
 <form id="filters" class="controls" method="get">
-  С даты: <input type="date" name="from" value="<?=htmlspecialchars($from)?>">
-  По дату: <input type="date" name="to" value="<?=htmlspecialchars($to)?>">
+  c <input type="date" name="from" value="<?=htmlspecialchars($from)?>">
+  по <input type="date" name="to" value="<?=htmlspecialchars($to)?>">
   Код: <input type="text" name="code" placeholder="например: A1B2C3D4 или G7K*" value="<?=htmlspecialchars($code)?>">
   <label><input type="checkbox" name="has_tg" value="1" <?= $has_tg==='1'?'checked':''; ?>> есть Telegram</label>
   <?php
@@ -201,8 +203,8 @@ function build_markdown($row){
       <th>Ответов</th>
       <th>Верных</th>
       <th>Точность</th>
-      <th>Итоги по темам</th>
-      <th>Скопировать результаты</th>
+      <th>По темам</th>
+      <th>Результаты</th>
       <th>Детали</th>
     </tr>
   </thead>
@@ -230,7 +232,7 @@ function build_markdown($row){
       <td>
         <?php $taId = 'md-'.$r['id']; ?>
         <textarea id="<?=$taId?>" class="copy-md" readonly><?=htmlspecialchars($md)?></textarea>
-        <button type="button" class="btn copy-btn" data-target="<?=$taId?>">Скопировать результаты</button>
+        <button type="button" class="btn copy-btn" data-target="<?=$taId?>">Скопировать</button>
       </td>
       <td><a class="btn" href="session.php?id=<?=$r['id']?>">Открыть</a></td>
     </tr>
@@ -282,12 +284,12 @@ document.addEventListener('click', (e) => {
   const txt = ta.value;
   if (navigator.clipboard && navigator.clipboard.writeText) {
     navigator.clipboard.writeText(txt).then(()=>{
-      const old = btn.textContent; btn.textContent='Скопировано!'; setTimeout(()=>btn.textContent=old,1200);
+      const old = btn.textContent; btn.textContent='Скопировано'; setTimeout(()=>btn.textContent=old,1200);
     });
   } else {
     ta.focus(); ta.select(); ta.setSelectionRange(0, 1e6);
     try { document.execCommand('copy'); } catch(e){}
-    const old = btn.textContent; btn.textContent='Скопировано!'; setTimeout(()=>btn.textContent=old,1200);
+    const old = btn.textContent; btn.textContent='Скопировано'; setTimeout(()=>btn.textContent=old,1200);
   }
 });
 
