@@ -4,7 +4,7 @@
   <meta charset="utf-8" />
   <title>Тест на грамотность</title>
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <link rel="stylesheet" href="css/test.css?1">
+  <link rel="stylesheet" href="css/test.css">
 </head>
 <body>
 
@@ -31,12 +31,18 @@
         <p>Сохраните свой результат и получите <strong>.pdf с правилами</strong> по всем темам русского языка:</p>
 
         <ol>
-          <li> Скопируйте код результата: <span id="copyresultid"></span>. </li>
-          <li> Отправьте код <a href="https://t.me/evgenybuyanoff" target="_blank">в телеграм</a> (не бот). </li>
+          <li> Скопируйте код результата:
+            <span id="copyresultid" tabindex="0" role="button" aria-label="Скопировать код результата"></span>.
+          </li>
+          <li> Отправьте код
+            <a id="tgTextLink" href="https://t.me/evgenybuyanoff" target="_blank" class="disabled" aria-disabled="true">в телеграм</a>
+            (не бот).
+          </li>
         </ol>
 
-        <div class="telegramwrap"><a class="btn btmtg" href="https://t.me/evgenybuyanoff" target="_blank">Получить в telegram</a></div>
-        <!-- <div class="restartwrap"><a id="restart">пройти заново</a></div> -->
+        <div class="telegramwrap">
+          <a id="tgBtn" class="btn btmtg disabled" href="https://t.me/evgenybuyanoff" target="_blank" aria-disabled="true">Получить в telegram</a>
+        </div>
 
       </div>
 
@@ -67,6 +73,10 @@
   const $rulePanel = document.getElementById('rulepanel');
   const $ruleClose = document.getElementById('ruleclose');
   const $ruleContent = document.getElementById('rulecontent');
+
+  // ссылки/кнопки ТГ
+  const $tgTextLink = document.getElementById('tgTextLink');
+  const $tgBtn = document.getElementById('tgBtn');
 
   $results.style.display = 'none';
 
@@ -260,7 +270,6 @@
     $resultstabel.innerHTML = `${inner}`;
     $results.style.display = 'block';
 
-    // Защита, если кнопки "пройти заново" нет в верстке
     const restart = document.getElementById('restart');
     if (restart) restart.addEventListener('click', resetAll);
   }
@@ -278,7 +287,7 @@
     renderText();
   }
 
-  // Правила: открытие/закрытие
+  // Правила
   function openRule(topic) {
     const rule = window.TOPICS[topic];
     if (!rule) return;
@@ -291,27 +300,24 @@
     $rulePanel.classList.add('open');
     $rulePanel.setAttribute('aria-hidden','false');
   }
-
   function closeRule() {
     $rulePanel.classList.remove('open');
     $rulePanel.setAttribute('aria-hidden','true');
     $overlay.classList.remove('open');
     $overlay.setAttribute('aria-hidden','true');
   }
-
   $ruleClose.addEventListener('click', closeRule);
   $overlay.addEventListener('click', closeRule);
   window.addEventListener('keydown', (e) => { if (e.key === 'Escape') closeRule(); });
 
-  // Клик по гэпу — показываем правило
+  // Клик по гэпу — правило
   $sentence.addEventListener('click', (e) => {
     const el = e.target.closest('.gap.done');
     if (!el) return;
     const topic = +el.dataset.topic;
     openRule(topic);
   });
-
-  // Клик по теме в результатах — тоже правило
+  // Клик по теме — правило
   $results.addEventListener('click', (e) => {
     const row = e.target.closest('.topicresult');
     if (!row) return;
@@ -342,30 +348,85 @@
     setTimeout(() => btn.classList.remove('is-pressed'), 120);
   }
 
-  // Скопировать результат
-  (() => {
-    const el = document.getElementById('copyresultid');
-    if (!el) return;
-
-    const tip = document.createElement('span');
-    tip.className = 'copy-bubble';
-    tip.textContent = 'Скопировано';
-    el.appendChild(tip);
-
-    let timer;
-    function showTip() {
-      tip.classList.add('show');
-      clearTimeout(timer);
-      timer = setTimeout(() => tip.classList.remove('show'), 1600);
+  // === Глобальная защита: disabled → alert и отмена перехода ===
+  const disabledGuard = (e) => {
+    const target = e.target.closest('a.disabled, button.disabled, .btn.disabled');
+    if (target) {
+      e.preventDefault();
+      e.stopPropagation();
+      alert('Сначала скопируйте код результата.');
     }
-
-    function copy() {
-      const text = el.firstChild.nodeValue.trim();
-      navigator.clipboard.writeText(text).then(showTip);
+  };
+  document.addEventListener('click', disabledGuard, true);
+  document.addEventListener('keydown', (e) => {
+    if ((e.key === 'Enter' || e.key === ' ') &&
+        e.target && e.target.closest && e.target.closest('a.disabled, button.disabled, .btn.disabled')) {
+      e.preventDefault();
+      alert('Сначала скопируйте код результата.');
     }
+  }, true);
 
-    el.addEventListener('click', copy);
-  })();
+// === Скопировать результат ===
+(() => {
+  const el = document.getElementById('copyresultid');
+  if (!el) return;
+
+  let originalText = '';   // запомним код
+  let locked = false;      // блокировка на время "скопировано"
+
+  function copyAction() {
+    if (locked) return; // нельзя повторно кликнуть пока "скопировано"
+
+    const text = el.textContent.trim();
+    if (!text) return;
+
+    originalText = text;
+
+    navigator.clipboard.writeText(text).then(() => {
+      showCopied();
+      unlockTelegram();
+    }).catch(() => {
+      // fallback
+      const ta = document.createElement('textarea');
+      ta.value = text;
+      document.body.appendChild(ta);
+      ta.select();
+      try { document.execCommand('copy'); } catch(e) {}
+      document.body.removeChild(ta);
+      showCopied();
+      unlockTelegram();
+    });
+  }
+
+  function showCopied() {
+    locked = true;
+    el.textContent = 'скопировано';
+    el.style.pointerEvents = 'none';
+    setTimeout(() => {
+      el.textContent = originalText;
+      el.style.pointerEvents = '';
+      locked = false;
+    }, 900);
+  }
+
+  function unlockTelegram() {
+    [document.getElementById('tgTextLink'),
+     document.getElementById('tgBtn')].forEach((node) => {
+      if (!node) return;
+      node.classList.remove('disabled');
+      node.removeAttribute('aria-disabled');
+    });
+  }
+
+  el.addEventListener('click', copyAction);
+  el.addEventListener('keydown', (ev) => {
+    if (ev.key === 'Enter' || ev.key === ' ') {
+      ev.preventDefault();
+      copyAction();
+    }
+  });
+})();
+
 
   // Старт
   renderText();
