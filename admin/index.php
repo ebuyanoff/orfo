@@ -97,7 +97,7 @@ $rows = $stmt->fetchAll(PDO::FETCH_ASSOC);
 /** ===== helpers ===== */
 
 function normalize_host_path($url, $topic){
-  $fallback = "orfo.club/rules/topic-{$topic}.html";
+  $fallback = "orfo.club/rules/{$topic}.html";
   if (!$url) return $fallback;
   if (strpos($url, 'http://')===0 || strpos($url, 'https://')===0) {
     $u = parse_url($url);
@@ -122,7 +122,7 @@ function render_topics_html($json){
     $topic = intval($t['topic'] ?? 0);
     $pct   = intval($t['pct'] ?? 0);
     $title = htmlspecialchars($t['title'] ?? ('Тема '.$topic));
-    $url   = htmlspecialchars($t['rule_url'] ?? ("https://orfo.club/rules/topic-".$topic.".html"));
+    $url   = htmlspecialchars($t['rule_url'] ?? ("https://orfo.club/rules/".$topic.".html"));
     $out[] = "<p class='topicintable'><a href='{$url}' target='_blank' rel='noopener'>{$title}</a>: <b>{$pct}%</b>.</p>";
   }
   return implode('', $out);

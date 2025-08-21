@@ -84,7 +84,7 @@ try {
     $ok     = (int)$r['ok'];
     $pct    = $total > 0 ? (int)round(($ok / $total) * 100) : 0;
     $title  = $r['title'] ?: ('Тема ' . $t);
-    $rule   = $r['rule_url'] ?: ("https://orfo.club/rules/topic-{$t}.html");
+    $rule   = $r['rule_url'] ?: ("https://orfo.club/rules/{$t}.html");
 
     $topics[] = [
       'topic'    => $t,

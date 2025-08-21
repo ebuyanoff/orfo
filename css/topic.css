@@ -1,2 +1,29 @@
-:root { --w: 620px; --blue:#1976d2; --gray:#b6b6b6; --red:#ef233c; --green:#09b73d; --violet:#860c8a; --focus:#fff316;}
-html, body { padding: 40px 0; margin:0; width:92%; max-width: 800px; margin:auto; background: #fff; color: #000; font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, "Liberation Mono", monospace; font-size: 18px;}
+:root { --w: 620px; --blue:#1976d2; --gray:#b6b6b6; --red:#ef233c; --green:#09b73d; --violet:#860c8a; --focus:#fff316; --ink:#111;--muted:#555;--line:#e5e7eb;--blue:#2563eb;--bg:#fff; --soft:#eceff1; }
+body {padding: 40px 0; margin:0; width:88%; max-width: 800px; margin:auto; background: #fff; color: #000;; font-size: 16px; font-family:ui-sans-serif,system-ui,-apple-system,Segoe UI,Roboto,Inter,Arial,sans-serif; line-height:1.6; box-sizing:border-box}
+
+.section {margin:16px 0 0}
+.card{padding:10px 0;background:#fff}
+
+h1{margin:0 0 10px;font-size:clamp(22px,4.2vw,34px);line-height:1.2}
+h2{margin:38px 0 16px;font-size:clamp(18px,3.4vw,24px);line-height:1.25}
+h3{margin:28px 0 2px;font-size:clamp(18px,3.4vw,24px);line-height:1.25}
+p {margin:24px 0;}
+.badge{display:inline-block;border:1px solid var(--line);border-radius:999px;padding:.1em .6em;font-weight:700}
+
+.rule{display:flex;gap:10px;align-items:flex-start;margin:10px 0}
+.no{flex:0 0 auto;width:26px;height:26px;border:1px solid var(--line);border-radius:8px;display:grid;place-items:center;font-weight:700;line-height: 100%;}
+.no + div {padding:2px 0 0;}
+.ex{margin:4px 0 8px;padding:6px 12px;border-left:0px solid var(--blue); background:var(--soft); border-radius:4px; display: block;}
+.muted{color:var(--muted)}
+.list{margin:6px 0 0;padding-left:18px}
+
+.pair{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin:8px 0 0}
+.box{padding:8px 10px;background:var(--soft);border-radius:8px}
+ul{padding-left:18px;margin:6px 0}
+ol{padding-left:18px;margin:6px 0} 
+
+@media screen and (max-width: 800px) {
+body {font-size: 14px;}
+.pair{gap:4px;margin:4px 0 0}
+.box{border-radius:4px}
+}
