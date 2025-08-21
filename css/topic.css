@@ -1,5 +1,5 @@
 :root { --w: 620px; --blue:#1976d2; --gray:#b6b6b6; --red:#ef233c; --green:#09b73d; --violet:#860c8a; --focus:#fff316; --ink:#111;--muted:#555;--line:#e5e7eb;--blue:#2563eb;--bg:#fff; --soft:#eceff1; }
-body {padding: 40px 0; margin:0; width:88%; max-width: 800px; margin:auto; background: #fff; color: #000;; font-size: 16px; font-family:ui-sans-serif,system-ui,-apple-system,Segoe UI,Roboto,Inter,Arial,sans-serif; line-height:1.6; box-sizing:border-box}
+body {padding: 40px 0; margin:0; width:88%; max-width: 800px; margin:auto; background: #fff; color: #000;; font-size: 16px; font-family:ui-sans-serif,system-ui,-apple-system,Segoe UI,Roboto,Inter,Arial,sans-serif; line-height:1.6; box-sizing:border-box; }
 
 .section {margin:16px 0 0}
 .card{padding:10px 0;background:#fff}
