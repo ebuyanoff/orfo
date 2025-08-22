@@ -12,40 +12,71 @@
 html,body{margin:0;color:#000;font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,"Liberation Mono",monospace;font-size:20px;line-height:1.45;}
 
 .wrap{min-height:100vh;display:grid;place-items:center;padding:8vh 15px; box-sizing: border-box;}
-.firstscreen {margin:0; color:var(--text); background:var(--bg); background-image: radial-gradient(240px 180px at -60px -40px, #9ec5ff33 0 40%, transparent 60%), radial-gradient(300px 220px at 110% -40px, #93c5fd25 0 35%, transparent 70%), radial-gradient(260px 220px at -40px 110%, #60a5fa20 0 35%, transparent 70%), radial-gradient(320px 260px at 110% 110%, #93c5fd18 0 35%, transparent 70%), repeating-linear-gradient(#0000, #0000 31px, var(--line) 31px, var(--line) 32px), linear-gradient(var(--bg),var(--bg)); background-attachment: fixed, fixed, fixed, fixed, fixed, fixed; }
+.firstscreen{margin:0;color:var(--text);background:var(--bg);
+  background-image:
+    radial-gradient(240px 180px at -60px -40px,#9ec5ff33 0 40%,transparent 60%),
+    radial-gradient(300px 220px at 110% -40px,#93c5fd25 0 35%,transparent 70%),
+    radial-gradient(260px 220px at -40px 110%,#60a5fa20 0 35%,transparent 70%),
+    radial-gradient(320px 260px at 110% 110%,#93c5fd18 0 35%,transparent 70%),
+    repeating-linear-gradient(#0000,#0000 31px,var(--line) 31px,var(--line) 32px),
+    linear-gradient(var(--bg),var(--bg));
+  background-attachment:fixed,fixed,fixed,fixed,fixed,fixed;}
 .main{width:min(100%,var(--w));}
 
 h1{margin:14px 0 8px;font-size:clamp(28px,5vw,50px);line-height:1.15;font-weight:700;}
 .red{color:var(--red);}
-.lead{margin:4vh 0;font-size:clamp(18px,2.8vw,22px); max-width: 640px;}
+.lead{margin:4vh 0;font-size:clamp(18px,2.8vw,22px);max-width:640px;}
 
 .stats{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:2px 12px;margin:10px 0;}
 .stat{padding:12px 14px 12px 0;}
 .num{font-size:clamp(22px,4vw,40px);font-weight:700;letter-spacing:.02em;}
 .cap{margin-top:4px;font-size:16px;opacity:.9;}
 
-.btnwrap {margin:50px 0;}
+.btnwrap{margin:50px 0;}
 .btn{display:inline-flex;align-items:center;justify-content:center;min-height:52px;padding:4px 24px;border:2px solid #000;border-radius:10px;background:#fff;color:#000;font:inherit;font-size:26px;line-height:1;text-decoration:none;cursor:pointer;transition:transform .08s ease,box-shadow .08s ease;}
 .btn:hover{box-shadow:0 2px 0 #000;transform:translateY(-1px);}
 
 /* Автор */
-.author{position:absolute; left:15px; top:15px; display:flex;align-items:center;gap:8px;}
+.author{position:absolute;left:15px;top:15px;display:flex;align-items:center;gap:8px;}
 .author-img{height:1.2em;width:1.2em;border-radius:50%;object-fit:cover;flex-shrink:0;}
 .author-cap{font-size:14px;color:silver;}
 
 @media (max-width:640px){
   .wrap{min-height:auto;}
-
-  /* Перестановка: stats выше, кнопка ниже */
   .main{display:flex;flex-direction:column;}
-  .stats{order:2; grid-template-columns:1fr;}
-  .btnwrap{order:3; margin:32px 0 0;}
-  
+  .stats{order:2;grid-template-columns:1fr;}
+  .btnwrap{order:3;margin:32px 0 0;}
   .stat{display:grid;grid-template-columns:auto 1fr;align-items:center;gap:4px;padding:0;}
   .num{font-size:28px;min-width:40px;text-align:left;}
   .cap{margin-top:0;font-size:16px;}
-  .btn {font-size:22px; min-height:42px;padding:4px 24px;}
-  .author {top:auto; bottom:15px;}
+  .btn{font-size:22px;min-height:42px;padding:4px 24px;}
+  .author{top:auto;bottom:15px;}
+}
+
+/* === МОДАЛКА ТЕМ (обновлено) === */
+#showtopics{ cursor:pointer; text-decoration-line: underline; text-decoration-style: dashed; text-decoration-thickness: 1px; text-underline-offset: .2em; }
+.modal-backdrop{position:fixed;inset:0;background:rgba(0,0,0,.25);display:none;align-items:center;justify-content:center;padding:20px;z-index:1000;}
+.modal{position:relative;background:#fff;border:2px solid #000;border-radius:10px;width:min(96vw,720px);box-shadow:0 6px 0 #000;}
+.modal-header{padding:16px 56px 16px 18px;border-bottom:2px solid #000;}
+.modal-title{font-size:clamp(24px,4.2vw,32px);line-height:1.2;font-weight:700;}
+.modal-close{position:absolute;top:12px;right:16px;width:36px;height:36px;background:#fff;font:inherit;font-size:42px;line-height:1;cursor:pointer; border:none; color:silver;}
+.modal-body{padding:14px 18px;}
+.topics-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px 24px;}
+.topics-grid .topic{margin:0;font-size:18px;}
+.modal-footer{padding:14px 18px;border-top:2px solid #000;display:flex;gap:12px;justify-content:flex-end;}
+
+body.modal-open{overflow:hidden;}
+
+@media (max-width:640px){
+  .modal{width:min(96vw,560px);border-radius:10px;}
+  .modal-header{padding:12px 48px 12px 14px;}
+  .modal-title{font-size:22px;}
+  .modal-close{top:8px;right:8px;width:32px;height:32px;font-size:32px;border-radius:6px;}
+  .modal-body{padding:10px 14px;}
+  .topics-grid{grid-template-columns:1fr;gap:6px 16px;}
+  .topics-grid .topic{font-size:16px;}
+  .modal-footer{padding:10px 14px;}
+  .btn{font-size:20px;min-height:40px;}
 }
 </style>
 </head>
@@ -58,8 +89,11 @@ h1{margin:14px 0 8px;font-size:clamp(28px,5vw,50px);line-height:1.15;font-weight
       <div class="btnwrap"><a class="btn" href="test.html">Пройти тест →</a></div>
 
       <section class="stats" aria-label="Ключевые цифры">
-        <div class="stat"><div class="num red">10</div><div class="cap">проверочных текстов, 5–7 мин</div></div>
-        <div class="stat"><div class="num">11</div><div class="cap">проблемных тем правописания</div></div>
+        <div class="stat"><div class="num red">12</div><div class="cap">проверочных текстов, 5–7 мин</div></div>
+        <div class="stat"><!-- поменяли 11 на 14 -->
+          <div class="num" id="topicsCount">14</div>
+          <div class="cap"><span id="showtopics" role="button" tabindex="0">проблемных тем</span> правописания</div>
+        </div>
         <div class="stat"><div class="num">0</div><div class="cap">бесплатно, результат сразу</div></div>
       </section>
 
@@ -67,8 +101,118 @@ h1{margin:14px 0 8px;font-size:clamp(28px,5vw,50px);line-height:1.15;font-weight
         <img src="images/buyanov.webp" alt="Евгений Буянов" class="author-img">
         <div class="author-cap">Сделал Евгений Буянов</div>
       </a> -->
-
     </main>
   </div>
+
+  <!-- === МОДАЛЬНОЕ ОКНО С ТЕМАМИ === -->
+  <div class="modal-backdrop" id="topicsModal" aria-hidden="true">
+    <div class="modal" role="dialog" aria-modal="true" aria-labelledby="topicsTitle">
+      <button class="modal-close" id="closeTopics" aria-label="Закрыть" title="Закрыть">×</button>
+      <div class="modal-header">
+        <div id="topicsTitle" class="modal-title">В тесте будут темы:</div>
+      </div>
+      <div class="modal-body">
+        <div class="topics-grid" id="topicsList"></div>
+      </div>
+      <div class="modal-footer">
+        <a class="btn" href="test.html">Поехали →</a>
+      </div>
+    </div>
+  </div>
+
+  <!-- Явно подключаем файл с темами -->
+  <script src="js/topics.js" defer></script>
+
+  <script>
+(function(){
+  const trigger   = document.getElementById('showtopics');
+  const backdrop  = document.getElementById('topicsModal');
+  const listEl    = document.getElementById('topicsList');
+  const btnClose  = document.getElementById('closeTopics');
+  const countEl   = document.getElementById('topicsCount');
+  let lastActive  = null;
+
+  const hasTopics = () => (window.TOPICS && Object.keys(window.TOPICS).length > 0);
+
+  function escapeHtml(s){
+    return String(s).replace(/[&<>"']/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
+  }
+
+  // Надёжная подгрузка js/topics.js, если TOPICS ещё нет
+  function ensureTopicsLoaded(){
+    return new Promise((resolve, reject) => {
+      if (hasTopics()) return resolve();
+
+      const existing = document.getElementById('topicsScriptDynamic');
+      if (existing) {
+        existing.addEventListener('load', () => hasTopics() ? resolve() : reject(new Error('TOPICS пуст')));
+        existing.addEventListener('error', () => reject(new Error('Не удалось загрузить js/topics.js')));
+        return;
+      }
+      const s = document.createElement('script');
+      s.id = 'topicsScriptDynamic';
+      s.src = 'js/topics.js';
+      s.async = true;
+      // ВОТ ЗДЕСЬ БЫЛА ОШИБКА: лишняя ")"
+      s.onload = () => { 
+        if (hasTopics()) resolve(); else reject(new Error('TOPICS пуст'));
+      };
+      s.onerror = () => reject(new Error('Не удалось загрузить js/topics.js'));
+      document.head.appendChild(s);
+    });
+  }
+
+  function fillTopics(){
+    const raw = window.TOPICS || {};
+    const topics = Object.values(raw).slice(0,14).map(t => t.title);
+    listEl.innerHTML = topics.length
+      ? topics.map(t => `<div class="topic">${escapeHtml(t)}</div>`).join('')
+      : '<div class="topic">Не удалось загрузить темы. Проверьте файл js/topics.js</div>';
+
+    // Обновим число тем, если элемент есть
+    if (countEl && topics.length) countEl.textContent = topics.length;
+  }
+
+  function reallyOpen(){
+    lastActive = document.activeElement;
+    document.body.classList.add('modal-open');
+    backdrop.style.display = 'flex';
+    backdrop.setAttribute('aria-hidden','false');
+    btnClose?.focus(); // фокус на крестик
+    document.addEventListener('keydown', onKeydown);
+  }
+
+  function openModal(){
+    ensureTopicsLoaded()
+      .then(() => { fillTopics(); reallyOpen(); })
+      .catch((err) => {
+        listEl.innerHTML = `<div class="topic">${escapeHtml(err.message)}</div>`;
+        reallyOpen();
+      });
+  }
+
+  function closeModal(){
+    backdrop.style.display = 'none';
+    backdrop.setAttribute('aria-hidden','true');
+    document.body.classList.remove('modal-open');
+    document.removeEventListener('keydown', onKeydown);
+    if (lastActive) lastActive.focus();
+  }
+
+  function onKeydown(e){
+    if (e.key === 'Escape') closeModal();
+    if ((e.key === 'Enter' || e.key === ' ') && document.activeElement === trigger){
+      e.preventDefault(); openModal();
+    }
+  }
+
+  // Слушатели
+  trigger?.addEventListener('click', (e)=>{ e.preventDefault(); openModal(); });
+  trigger?.addEventListener('keydown', onKeydown);
+  backdrop?.addEventListener('click', (e)=>{ if (e.target === backdrop) closeModal(); });
+  btnClose?.addEventListener('click', closeModal);
+})();
+</script>
+
 </body>
 </html>
