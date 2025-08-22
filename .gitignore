@@ -3,6 +3,7 @@
 /bot/.env
 *.sqlite
 *.log
+readme.txt
 
 /api/config.php
 /bot/.env

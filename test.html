@@ -93,7 +93,8 @@
   });
 
   // Статистика по темам
-  const stats = { 1:{ok:0,total:0}, 2:{ok:0,total:0}, 3:{ok:0,total:0} };
+  const stats = {};
+  Object.keys(window.TOPICS).forEach(k => { stats[k] = { ok: 0, total: 0 }; });
 
   // Текущий активный гэп
   let gapCursor = 0;

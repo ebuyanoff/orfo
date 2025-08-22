@@ -1,10 +1,10 @@
 :root { --w: 620px; --blue:#1976d2; --gray:#b6b6b6; --red:#ef233c; --green:#09b73d; --violet:#860c8a; --focus:#fff316;}
-html, body { margin: 0; background: #fff; color: #000; font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, "Liberation Mono", monospace; font-size: 20px;}
+html, body { margin: 0; padding:0 0 50px;background: #fff; color: #000; font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, "Liberation Mono", monospace; font-size: 20px;}
 
 #testwrap {min-height:80svh; display: flex; justify-content: center; align-items: center;}
 .card { width: var(--w); max-width: calc(100% - 30px); margin: 10svh 0; }
 .meta {font-size: 16px; color: var(--gray);  margin-bottom: 40px; display: flex; justify-content: space-between;}
-.sentence { font-size: 28px; line-height: 160%; user-select: none; }
+.sentence { font-size: 28px; line-height: 160%; /*user-select: none;*/ }
 
 .nowrap { white-space: nowrap; display: inline-flex; align-items: baseline; vertical-align: baseline; }
 .sentence .gap { display: inline-flex; align-items: center; justify-content: center; box-sizing: border-box; min-width: 1.6ch; height: 1.1em; line-height: 1em; padding: 0 .25ch; margin: 0 .05ch; background:#f1f1f1;color: var(--gray); border-radius: 6px; vertical-align: middle; text-align: center; transition: border-color .15s, box-shadow .15s, transform .15s; }
@@ -33,7 +33,7 @@ html, body { margin: 0; background: #fff; color: #000; font-family: ui-monospace
 .topicresult span:nth-child(2) {padding-left:30px; font-weight: bold;}
 .restartwrap {margin:20px 0 20px; text-align: center;}
 #restart {font-size:20px; color:var(--gray); cursor: pointer;}
-.telegramwrap {display: grid; margin:42px 0 0;}
+.telegramwrap {display: grid; margin:42px 0 15px;}
 .btmtg {background-color: #86ccef; grid-column: 1 / -1;  color:black; text-decoration: none; padding:4px 20px; line-height: 100%;}
 
 .disabled {opacity: 0.5; cursor: not-allowed; }
@@ -53,12 +53,9 @@ html, body { margin: 0; background: #fff; color: #000; font-family: ui-monospace
 #copyresultid::after,#copyresultid::before{content:"";position:absolute;right:4px;top:50%;width:14px;height:16px;border:1px solid currentColor;border-radius:2px;transform:translateY(-50%);opacity:.65;pointer-events:none}
 #copyresultid::before{right:8px;top:calc(50% - 2px);opacity:.35}
 
-.unlocked-flash { animation: flash 900ms ease-out 1; }
-@keyframes flash {
-  0% { box-shadow: 0 0 0 0 rgba(0,150,0,.6); }
-  70% { box-shadow: 0 0 0 12px rgba(0,150,0,0); }
-  100% { box-shadow: none; }
-}
+.unlocked-flash { animation: flash 900ms ease-out 1; } @keyframes flash { 0% { box-shadow: 0 0 0 0 rgba(0,150,0,.6); } 70% { box-shadow: 0 0 0 12px rgba(0,150,0,0); } 100% { box-shadow: none; } }
+
+
 
 @media screen and (max-width: 800px) {
   body {font-size: 18px;}		
@@ -71,5 +68,5 @@ html, body { margin: 0; background: #fff; color: #000; font-family: ui-monospace
   .btn:not(#mid):hover { box-shadow: none;}
   .btn#mid {padding:0; font-size:16px; height:48px;}
   .btn--wide { margin:0 0 56px;}
-  .telegramwrap {margin:28px 0 0;}
+  .telegramwrap {margin:28px 0 15px; left:15px; right:15px; position:fixed; bottom:0;}
 }
