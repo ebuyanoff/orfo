@@ -174,7 +174,7 @@ input[type="text"], input[type="date"] {padding:.3rem .4rem;border:1px solid sil
 .tg-input.error{border-color:#c62828; box-shadow:0 0 0 2px rgba(198,40,40,.15)}
 
 .topics {max-height:40px;}
-.topics p {font-size:12px; line-height:1; margin:0; padding:0; display:inline-block; max-width:170px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;}
+.topics p {font-size:12px; line-height:1; margin:0; padding:0; display:inline-block; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;}
 .topics p a {color:#333; text-decoration:none;}
 ::placeholder {color:#999;opacity:0.2;}
 table input[type="text"] {border:none; min-width:70px;}
