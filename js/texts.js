@@ -85,7 +85,7 @@ parts: [
 '; хорошо, что отношения ',
 { id:'t6g3', topic:7, correct:'т', left:'т', right:'ть', btnLeft:'т', btnRight:'ть', pre:'строя', post:'ся' },
 ' на доверии — клиент согласился не ',
-{ id:'t6g4', topic:6, correct:'и', left:'ы', right:'и', btnLeft:'ы', btnRight:'и', pre:'вз', post:'имать' },
+{ id:'t6g4', topic:6, correct:'и', left:'ы', right:'и', btnLeft:'ы', btnRight:'и', pre:'вз', post:'мать' },
 ' пени.'
 ]
 },
@@ -139,8 +139,8 @@ parts: [
 id: 't10',
 parts: [
 'После ',
-{ id:'t10g1', topic:7, correct:'рь', left:'рь', right:'р', btnLeft:'рь', btnRight:'р', pre:'янва', post:'ские' },
-' празники мы вернулись в офис, а коллега продолжил ',
+{ id:'t10g1', topic:7, correct:'рь', left:'рь', right:'р', btnLeft:'рь', btnRight:'р', pre:'янва', post:'ских' },
+' праздников мы вернулись в офис, а коллега продолжил ',
 { id:'t10g2', topic:2, correct:'е', left:'и', right:'е', btnLeft:'и', btnRight:'е', pre:'пр', post:'бывать' },
 ' в командировке — объехал уже ',
 { id:'t10g3', topic:4, correct:'-', left:'-', right:'_', btnLeft:'-', btnRight:'раздельно', pre:'пол', post:'Китая' },
@@ -173,9 +173,9 @@ parts: [
 ' результатами, и нельзя ',
 { id:'t12g2', topic:3, correct:'←', left:'←', right:'_', btnLeft:'слитно', btnRight:'раздельно', pre:'не', post:'дооценить' },
 ' роль дружной ',
-{ id:'t12g3', topic:10, correct:'ё', left:'о', right:'ё', btnLeft:'о', btnRight:'ё', pre:'ноч', post:'вка' },
-' в офисе — формат ',
-{ id:'t12g4', topic:11, correct:'е', left:'е', right:'и', btnLeft:'е', btnRight:'и', pre:'наподоби', post:'е' },
+{ id:'t12g3', topic:10, correct:'ё', left:'о', right:'ё', btnLeft:'о', btnRight:'ё', pre:'ноч', post:'вки' },
+' в офисе — формата ',
+{ id:'t12g4', topic:11, correct:'е', left:'е', right:'и', btnLeft:'е', btnRight:'и', pre:'наподоби', post:'' },
 ' ретрита.'
 ]
 },
