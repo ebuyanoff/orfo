@@ -25,8 +25,8 @@ parts: [
 ' отдела, открыла окно ',
 { id:'t2g3', topic:7, correct:'жь', left:'ж', right:'жь', btnLeft:'ж', btnRight:'жь', pre:'насте', post:'' },
 ', но отчёт — это, увы, ',
-{ id:'t2g4', topic:4, correct:'←', left:'←', right:'-', btnLeft:'слитно', btnRight:'-', pre:'полу', post:'правда' },
-'.'
+{ id:'t2g4', topic:4, correct:'←', left:'←', right:'-', btnLeft:'слитно', btnRight:'-', pre:'полу', post:'правда.' },
+''
 ]
 },
 
@@ -39,9 +39,9 @@ parts: [
 { id:'t3g2', topic:0, correct:'ст', left:'ст', right:'с', btnLeft:'ст', btnRight:'с', pre:'ле', post:'ница' },
 ' метро, и даже ',
 { id:'t3g3', topic:5, correct:'-', left:'-', right:'←', btnLeft:'-', btnRight:'слитно', pre:'премьер', post:'министр' },
-' в новостях не смог отвлечь — в офисе ждёт новый ',
-{ id:'t3g4', topic:10, correct:'ё', left:'о', right:'ё', btnLeft:'о', btnRight:'ё', pre:'тренаж', post:'р' },
-' для командного фитнеса.'
+' будет сегодня заниматься на',
+{ id:'t3g4', topic:10, correct:'ё', left:'о', right:'ё', btnLeft:'о', btnRight:'ё', pre:'тренаж', post:'ре.' },
+''
 ]
 },
 
@@ -100,7 +100,7 @@ parts: [
 ' кофе, ведь к концу спринта ',
 { id:'t7g3', topic:9, correct:'о', left:'а', right:'о', btnLeft:'а', btnRight:'о', pre:'выг', post:'рание' },
 ' на ',
-{ id:'t7g4', topic:13, correct:'ть', left:'т', right:'ть', btnLeft:'т', btnRight:'ть', pre:'девят', post:'надцать' },
+{ id:'t7g4', topic:13, correct:'ть', left:'т', right:'ть', btnLeft:'т', btnRight:'ть', pre:'девя', post:'надцать' },
 ' процентов.'
 ]
 },
@@ -126,7 +126,7 @@ parts: [
 'Наш KPI — ',
 { id:'t9g1', topic:5, correct:'←', left:'←', right:'-', btnLeft:'слитно', btnRight:'-', pre:'вечно', post:'зелёный' },
 ' график роста, который ',
-{ id:'t9g2', topic:11, correct:'', left:'←', right:'', btnLeft:'слитно', btnRight:'раздельно', pre:'в', post:'сравнении' },
+{ id:'t9g2', topic:11, correct:'', left:'←', right:'_', btnLeft:'слитно', btnRight:'раздельно', pre:'в', post:'сравнении' },
 ' с отчётом из ',
 { id:'t9g3', topic:10, correct:'о', left:'о', right:'ё', btnLeft:'о', btnRight:'ё', pre:'офш', post:'р' },
 '-офиса выглядит как «2 ',
@@ -145,8 +145,8 @@ parts: [
 ' в командировке — объехал уже ',
 { id:'t10g3', topic:4, correct:'-', left:'-', right:'_', btnLeft:'-', btnRight:'раздельно', pre:'пол', post:'Китая' },
 ' и встретил ',
-{ id:'t10g4', topic:12, correct:'м', left:'мм', right:'м', btnLeft:'мм', btnRight:'м', pre:'э', post:'игрант' },
-'-стартапера.'
+{ id:'t10g4', topic:12, correct:'м', left:'мм', right:'м', btnLeft:'мм', btnRight:'м', pre:'э', post:'игранта.' },
+''
 ]
 },
 
@@ -158,10 +158,10 @@ parts: [
 ' на марафоне: гребёт без остановок; между тем на ',
 { id:'t11g2', topic:1, correct:'н', left:'нн', right:'н', btnLeft:'нн', btnRight:'н', pre:'кожа', post:'ый' },
 ' диван плюхнулась распечатка из ',
-{ id:'t11g3', topic:8, correct:'н', left:'н', right:'нъ', btnLeft:'н', btnRight:'нъ', pre:'ми', post:'юст' },
+{ id:'t11g3', topic:8, correct:'н', left:'н', right:'нъ', btnLeft:'н', btnRight:'нъ', pre:'ми', post:'юста' },
 ': «работа ',
-{ id:'t11g4', topic:3, correct:'', left:'', right:'←', btnLeft:'раздельно', btnRight:'слитно', pre:'не', post:'закончена' },
-'».'
+{ id:'t11g4', topic:3, correct:'', left:'', right:'←', btnLeft:'раздельно', btnRight:'слитно', pre:'не', post:'закончена».' },
+''
 ]
 },
 
@@ -202,8 +202,8 @@ parts: [
 { id:'t14g1', topic:9, correct:'а', left:'о', right:'а', btnLeft:'о', btnRight:'а', pre:'к', post:'сается' },
 ' всех, даже ',
 { id:'t14g2', topic:6, correct:'ы', left:'ы', right:'и', btnLeft:'ы', btnRight:'и', pre:'бледнолиц', post:'й' },
-' стажёр, который ',
-{ id:'t14g3', topic:7, correct:'нь', left:'н', right:'нь', btnLeft:'н', btnRight:'нь', pre:'ня', post:'читься' },
+' стажёр, с которым ',
+{ id:'t14g3', topic:7, correct:'нь', left:'н', right:'нь', btnLeft:'н', btnRight:'нь', pre:'ня', post:'чатся' },
 ', заслужил ',
 { id:'t14g4', topic:4, correct:'-', left:'-', right:'←', btnLeft:'-', btnRight:'слитно', pre:'пол', post:'арбуза' },
 ' из фруктовой тарелки.'
