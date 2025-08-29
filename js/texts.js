@@ -39,7 +39,7 @@ parts: [
 { id:'t3g2', topic:0, correct:'ст', left:'ст', right:'с', btnLeft:'ст', btnRight:'с', pre:'ле', post:'ница' },
 ' метро, и даже ',
 { id:'t3g3', topic:5, correct:'-', left:'-', right:'←', btnLeft:'-', btnRight:'слитно', pre:'премьер', post:'министр' },
-' будет сегодня заниматься на',
+' будет сегодня заниматься на ',
 { id:'t3g4', topic:10, correct:'ё', left:'о', right:'ё', btnLeft:'о', btnRight:'ё', pre:'тренаж', post:'ре.' },
 ''
 ]
