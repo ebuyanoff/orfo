@@ -19,7 +19,7 @@ parts: [
 id: 't2',
 parts: [
 'Она ',
-{ id:'t2g1', topic:1, correct:'н', left:'нн', right:'н', btnLeft:'нн', btnRight:'н', pre:'воспита', post:'а' },
+{ id:'t2g1', topic:1, correct:'нн', left:'нн', right:'н', btnLeft:'нн', btnRight:'н', pre:'воспита', post:'а' },
 ' и, как ',
 { id:'t2g2', topic:12, correct:'г', left:'г', right:'гг', btnLeft:'г', btnRight:'гг', pre:'бло', post:'ер' },
 ' отдела, открыла окно ',
@@ -100,7 +100,7 @@ parts: [
 ' кофе, ведь к концу спринта ',
 { id:'t7g3', topic:9, correct:'о', left:'а', right:'о', btnLeft:'а', btnRight:'о', pre:'выг', post:'рание' },
 ' на ',
-{ id:'t7g4', topic:13, correct:'ть', left:'т', right:'ть', btnLeft:'т', btnRight:'ть', pre:'девя', post:'надцать' },
+{ id:'t7g4', topic:13, correct:'т', left:'т', right:'ть', btnLeft:'т', btnRight:'ть', pre:'девя', post:'надцать' },
 ' процентов.'
 ]
 },
@@ -139,7 +139,7 @@ parts: [
 id: 't10',
 parts: [
 'После ',
-{ id:'t10g1', topic:7, correct:'рь', left:'рь', right:'р', btnLeft:'рь', btnRight:'р', pre:'янва', post:'ских' },
+{ id:'t10g1', topic:7, correct:'р', left:'рь', right:'р', btnLeft:'рь', btnRight:'р', pre:'янва', post:'ских' },
 ' праздников мы вернулись в офис, а коллега продолжил ',
 { id:'t10g2', topic:2, correct:'е', left:'и', right:'е', btnLeft:'и', btnRight:'е', pre:'пр', post:'бывать' },
 ' в командировке — объехал уже ',
